@@ -3,14 +3,17 @@ import Ajv from 'ajv';
 import {
   BillOfMaterials,
   BillOfMaterialsSchema,
+  BomInstance,
+  BomLine,
   ConfiguredBomLine,
   DefaultBomLine,
-  isConfiguredBomLine,
   isDefaultBomLine,
 } from '../bom-types-and-schemas.js';
 import { InvalidBomError } from './errors.js';
+import { ExportStatusService } from './status/export-status.service';
+import { PartName } from './onshape/onshape-types';
 
-export type StlFile = { name: string; data: string };
+export type StlFile = { name: string; data: Buffer };
 
 export abstract class BaseBomExporter<
   B extends BillOfMaterials,
@@ -25,6 +28,7 @@ export abstract class BaseBomExporter<
   protected constructor(
     protected readonly exportId: string,
     protected readonly billOfMaterials: B,
+    protected readonly exportStatusService: ExportStatusService,
   ) {
     this.verifyBomStructureIsValid(this.billOfMaterials);
   }
@@ -57,27 +61,79 @@ export abstract class BaseBomExporter<
   protected abstract verifyDeviceAndAllPartsAreAvailable(): Promise<void>;
 
   public async exportBom(): Promise<StlFile[]> {
+    this.exportStatusService.exportQueued(this.exportId);
     await this.verifyDeviceAndAllPartsAreAvailable();
-    const stlPromises: Promise<StlFile[]>[] = [];
+    this.exportStatusService.exportExporting(
+      this.exportId,
+      this.artifactNames(),
+    );
+    const stlsPromises: Promise<StlFile | StlFile[]>[] = [];
     for (const [partName, line] of R.toPairs(this.billOfMaterials.materials)) {
-      console.info(`Exporting ${partName}...`);
-      if (isDefaultBomLine(line))
-        stlPromises.push(this.stlsForDefaultLine(partName, line));
-      if (isConfiguredBomLine(line))
-        stlPromises.push(this.stlsForConfiguredLine(partName, line));
+      stlsPromises.push(this.exportBomLine(partName, line));
     }
-    const stls = await Promise.all(stlPromises);
+    const stls: StlFile[] = R.flatten(await Promise.all(stlsPromises));
     console.info('Export done.');
-    return R.flatten(stls);
+    this.exportStatusService.exportExported(this.exportId);
+    return stls;
   }
 
-  // TODO: Refactor to return individual STL files instead of arrays
-  protected abstract stlsForDefaultLine(
-    partName: string,
+  private exportBomLine(partName: string, line: BomLine): Promise<StlFile[]> {
+    if (isDefaultBomLine(line)) return this.exportDefaultLine(partName, line);
+    return this.exportConfiguredLine(partName, line);
+  }
+
+  // Part names are not going to be the same as artifact names because configured
+  // instances are not named the same as their parts
+  private artifactNames(): string[] {
+    const artifactNamesForLine = (
+      partName: string,
+      line: BomLine,
+    ): string[] => {
+      if (isDefaultBomLine(line)) return [partName];
+      return line.instances.map(R.prop('name'));
+    };
+    const artifactNames: string[] = [];
+    for (const pair of R.toPairs(this.billOfMaterials.materials)) {
+      artifactNames.push(...artifactNamesForLine(...pair));
+    }
+    return artifactNames;
+  }
+
+  private async exportDefaultLine(
+    partName: PartName,
     line: DefaultBomLine,
-  ): Promise<StlFile[]>;
-  protected abstract stlsForConfiguredLine(
-    partName: string,
+  ): Promise<StlFile[]> {
+    this.exportStatusService.partQueued(this.exportId, partName);
+    const data = await this.stlDataForDefaultLine(partName);
+    const files = R.times(
+      (i) => ({ data, name: `${partName}-${i}.stl` }),
+      line.count,
+    );
+    this.exportStatusService.partExported(this.exportId, partName);
+    return files;
+  }
+
+  private async exportConfiguredLine(
+    partName: PartName,
     line: ConfiguredBomLine,
-  ): Promise<StlFile[]>;
+  ): Promise<StlFile[]> {
+    const fileForInstance = async (instance: BomInstance): Promise<StlFile> => {
+      this.exportStatusService.partQueued(this.exportId, instance.name);
+      const dataProm = this.stlDataForConfiguredLineInstance(
+        partName,
+        instance,
+      );
+      const file = { name: instance.name + '.stl', data: await dataProm };
+      this.exportStatusService.partExported(this.exportId, instance.name);
+      return file;
+    };
+
+    return Promise.all(line.instances.map(fileForInstance));
+  }
+
+  protected abstract stlDataForDefaultLine(partName: PartName): Promise<Buffer>;
+  protected abstract stlDataForConfiguredLineInstance(
+    partName: PartName,
+    instance: BomInstance,
+  ): Promise<Buffer>;
 }

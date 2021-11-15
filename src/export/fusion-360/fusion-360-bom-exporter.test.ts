@@ -3,7 +3,6 @@ import {
   Fusion360BomExporter,
   Fusion360FileService,
 } from './fusion-360-bom-exporter';
-import * as R from 'ramda';
 import * as fs from 'fs';
 import {
   Fusion360DeviceNotFoundError,
@@ -12,9 +11,12 @@ import {
 } from './errors';
 import { Fusion360ExportUrlBuilder } from './fusion-360-export-url-builder';
 import { Test } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as path from 'path';
 import * as process from 'process';
+import { ExportStatusService } from '../status/export-status.service';
+import { ExportStatusModule } from '../status/export-status.module';
+import { WinstonLokiLoggerModule } from '../../logger/winston-loki-logger.module';
 
 //<editor-fold desc="Test Data">
 const validBom = {
@@ -138,11 +140,20 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
   const exportId = '5555';
   let urlBuilder: Fusion360ExportUrlBuilder;
   let fileService: Fusion360FileService;
+  let exportStatusService: ExportStatusService;
+  let partExportingSpy;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ConfigService],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+        }),
+        WinstonLokiLoggerModule,
+        ExportStatusModule,
+      ],
     }).compile();
+
     const configService = moduleRef.get(ConfigService);
 
     jest
@@ -156,6 +167,10 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
 
     fileService = new Fusion360FileService(configService);
     urlBuilder = new Fusion360ExportUrlBuilder(fileService);
+
+    exportStatusService = moduleRef.get(ExportStatusService);
+
+    partExportingSpy = jest.spyOn(exportStatusService, 'partExporting');
   });
 
   describe('Fusion360BomExporter', () => {
@@ -166,13 +181,15 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
           unknownDeviceBom as Fusion360Bom,
           fileService,
           urlBuilder,
+          exportStatusService,
         );
 
         const expErr = new Fusion360DeviceNotFoundError(
           'Unknown Device',
           'UnknownDeviceDir',
         );
-        await expect(exporter.exportBom()).rejects.toEqual(expErr);
+        const exportProm = exporter.exportBom();
+        await expect(exportProm).rejects.toEqual(expErr);
       });
 
       it('throws a PartNotFoundError for UnknownPart', async () => {
@@ -181,13 +198,15 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
           unknownPartBom as Fusion360Bom,
           fileService,
           urlBuilder,
+          exportStatusService,
         );
 
         const expErr = new Fusion360PartsNotFoundError(
           ['UnknownPart1', 'UnknownPart2'],
           'Test Device',
         );
-        await expect(exporter.exportBom()).rejects.toEqual(expErr);
+        const exportProm = exporter.exportBom();
+        await expect(exportProm).rejects.toEqual(expErr);
       });
 
       it('throws InvalidBomLocationError for invalid BoM location', async () => {
@@ -203,6 +222,7 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
               invalidBom,
               fileService,
               urlBuilder,
+              exportStatusService,
             ),
         ).toThrow(expect.any(Fusion360InvalidBomLocationError));
       });
@@ -218,17 +238,16 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
           validBom as Fusion360Bom,
           fileService,
           urlBuilder,
+          exportStatusService,
         );
-        const stlFiles = await exporter.exportBom();
 
-        const expFileNames = [
-          'Widget_1.stl',
-          'Widget_2.stl',
-          'Widget_3.stl',
-          'Test3-0.stl',
-          'Test3-1.stl',
-        ];
-        expect(stlFiles.map(R.prop('name'))).toStrictEqual(expFileNames);
+        const exportProm = exporter.exportBom();
+        const stlFiles = await exportProm;
+
+        const artifactNames = ['Widget_1', 'Widget_2', 'Widget_3', 'Test3'];
+        artifactNames.forEach((name) => {
+          expect(partExportingSpy).toHaveBeenCalledWith(exportId, name);
+        });
 
         // All files will be at least 1kb, just checking that they have some content
         stlFiles.forEach((file) => {
@@ -236,10 +255,9 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
           fs.writeFileSync(
             path.join(
               process.cwd(),
-              '.src/export/fusion-360/test-data/test-output',
+              './src/export/fusion-360/test-data/test-output',
               file.name,
             ),
-
             file.data,
           );
         });

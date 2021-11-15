@@ -4,6 +4,7 @@ import { PartName } from '../onshape/onshape-types';
 export type ExportStatusState =
   | 'queued'
   | 'exporting'
+  | 'exported'
   | 'zipping'
   | 'completed'
   | 'failed';
@@ -28,6 +29,10 @@ export type ExportingExportStatus = BaseExportStatus & {
   parts: Record<PartName, PartExportState>;
 };
 
+export type ExportedExportStatus = BaseExportStatus & {
+  state: 'exported';
+};
+
 export type ZippingExportStatus = BaseExportStatus & {
   state: 'zipping';
 };
@@ -44,6 +49,7 @@ export type FailedExportStatus = FinalizedExportStatus & {
 export type ExportStatus =
   | QueuedExportStatus
   | ExportingExportStatus
+  | ExportedExportStatus
   | ZippingExportStatus
   | CompletedExportStatus
   | FailedExportStatus;

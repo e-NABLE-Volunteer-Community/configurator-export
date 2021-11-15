@@ -276,6 +276,7 @@ export abstract class BaseOnshapeApi {
     data?: unknown;
     acceptJson?: true;
     manualRedirect?: true;
+    asBuffer?: true;
   }) {
     const {
       method,
@@ -285,6 +286,7 @@ export abstract class BaseOnshapeApi {
       data,
       acceptJson,
       manualRedirect,
+      asBuffer,
     } = args;
     return this.axios.request({
       url: this.baseUrl + path,
@@ -299,6 +301,7 @@ export abstract class BaseOnshapeApi {
         query,
       }),
       data,
+      responseType: asBuffer ? 'arraybuffer' : undefined,
       maxRedirects: manualRedirect ? 0 : undefined,
       validateStatus: manualRedirect ? (status) => status === 307 : null,
       // we need the query string to match the Authorization header exactly

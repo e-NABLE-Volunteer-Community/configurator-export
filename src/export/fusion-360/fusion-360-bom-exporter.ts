@@ -8,7 +8,7 @@ import * as fsp from 'fs/promises';
 import * as R from 'ramda';
 import Ajv, { JSONSchemaType } from 'ajv';
 
-import { BaseBomExporter, StlFile } from '../base-bom-exporter.js';
+import { BaseBomExporter } from '../base-bom-exporter.js';
 import {
   BomLocation,
   BomLocationType,
@@ -16,12 +16,7 @@ import {
 } from '../exporter-factory-registry.js';
 import { PartName } from '../onshape/onshape-types.js';
 import { Fusion360ExportUrlBuilder } from './fusion-360-export-url-builder.js';
-import {
-  BillOfMaterials,
-  BomInstance,
-  ConfiguredBomLine,
-  DefaultBomLine,
-} from '../../bom-types-and-schemas.js';
+import { BillOfMaterials, BomInstance } from '../../bom-types-and-schemas.js';
 import {
   Fusion360DeviceNotFoundError,
   Fusion360InvalidBomLocationError,
@@ -29,6 +24,7 @@ import {
 } from './errors.js';
 import { ConfigService } from '@nestjs/config';
 import { InternalServerError } from '../../errors';
+import { ExportStatusService } from '../status/export-status.service';
 
 export interface Fusion360Bom
   extends BillOfMaterials<BomLocationType.Fusion360> {
@@ -56,10 +52,16 @@ ExporterFactoryRegistry.registerBomExporterFactory<
   BomLocationType.Fusion360
 >({
   type: BomLocationType.Fusion360,
-  make: (id: string, bom: Fusion360Bom, configService: ConfigService) => {
+  make: ({ id, billOfMaterials, configService, exportStatusService }) => {
     const fileService = new Fusion360FileService(configService);
     const urlBuilder = new Fusion360ExportUrlBuilder(fileService);
-    return new Fusion360BomExporter(id, bom, fileService, urlBuilder);
+    return new Fusion360BomExporter(
+      id,
+      billOfMaterials,
+      fileService,
+      urlBuilder,
+      exportStatusService,
+    );
   },
 });
 
@@ -98,24 +100,21 @@ export class Fusion360FileService {
     return filesInInputDir.map((partFileName) => partFileName.split('.')[0]);
   }
 
-  public async readExportedStlFileForPartName(
-    partName: PartName,
-  ): Promise<StlFile> {
-    return this.readExportedStlFileWithName(partName + '.stl');
+  public async readExportedStlDataForName(name: PartName): Promise<Buffer> {
+    return this.readExportedStlDataForPartWithName(name + '.stl');
   }
 
-  public async readExportedStlFileForInstance(
+  public async readExportedStlDataForInstance(
     instance: BomInstance,
-  ): Promise<StlFile> {
-    return this.readExportedStlFileWithName(instance.name + '.stl');
+  ): Promise<Buffer> {
+    return await this.readExportedStlDataForName(instance.name);
   }
 
-  private async readExportedStlFileWithName(
+  private async readExportedStlDataForPartWithName(
     fileName: string,
-  ): Promise<StlFile> {
+  ): Promise<Buffer> {
     const exportedPath = path.join(this.outputDir, fileName);
-    const data = (await fsp.readFile(exportedPath)).toString();
-    return { name: fileName, data };
+    return await fsp.readFile(exportedPath);
   }
 }
 
@@ -123,12 +122,7 @@ export class Fusion360BomExporter extends BaseBomExporter<
   Fusion360Bom,
   BomLocationType.Fusion360
 > {
-  private static readonly validateBomLocation = new Ajv().compile(
-    Fusion360BomLocationSchema,
-  );
-
   public readonly locationType = BomLocationType.Fusion360;
-
   private readonly dir: string;
 
   constructor(
@@ -136,10 +130,36 @@ export class Fusion360BomExporter extends BaseBomExporter<
     protected readonly billOfMaterials: Fusion360Bom,
     protected readonly fileService: Fusion360FileService,
     protected readonly urlBuilder: Fusion360ExportUrlBuilder,
+    protected readonly exportStatusService: ExportStatusService,
   ) {
-    super(exportId, billOfMaterials);
+    super(exportId, billOfMaterials, exportStatusService);
     this.dir = billOfMaterials.location.dir;
   }
+
+  protected async stlDataForDefaultLine(partName: string): Promise<Buffer> {
+    const url = this.urlBuilder.urlForDeviceDirAndPartName(this.dir, partName);
+    this.exportStatusService.partExporting(this.exportId, partName);
+    await this.exportFileWithUrl(url);
+    return await this.fileService.readExportedStlDataForName(partName);
+  }
+
+  protected async stlDataForConfiguredLineInstance(
+    partName: string,
+    instance: BomInstance,
+  ): Promise<Buffer> {
+    const url = this.urlBuilder.urlForDeviceDirPartNameAndInstance(
+      this.dir,
+      partName,
+      instance,
+    );
+    this.exportStatusService.partExporting(this.exportId, instance.name);
+    await this.exportFileWithUrl(url);
+    return await this.fileService.readExportedStlDataForInstance(instance);
+  }
+
+  private static readonly validateBomLocation = new Ajv().compile(
+    Fusion360BomLocationSchema,
+  );
 
   /**
    This method is NOT tasked with ensuring the device described by the location
@@ -180,41 +200,6 @@ export class Fusion360BomExporter extends BaseBomExporter<
         missingParts,
         this.billOfMaterials.name,
       );
-  }
-
-  protected async stlsForDefaultLine(
-    partName: string,
-    line: DefaultBomLine,
-  ): Promise<StlFile[]> {
-    await this.verifyDeviceAndAllPartsAreAvailable();
-    const url = this.urlBuilder.urlForDeviceDirAndPartName(this.dir, partName);
-    await this.exportFileWithUrl(url);
-    const stl: StlFile = await this.fileService.readExportedStlFileForPartName(
-      partName,
-    );
-    return R.times(
-      (i) => ({ name: partName + '-' + i + '.stl', data: stl.data }),
-      line.count,
-    );
-  }
-
-  protected async stlsForConfiguredLine(
-    partName: string,
-    line: ConfiguredBomLine,
-  ): Promise<StlFile[]> {
-    const stls: StlFile[] = [];
-    for (const instance of line.instances) {
-      const url = this.urlBuilder.urlForDeviceDirPartNameAndInstance(
-        this.dir,
-        partName,
-        instance,
-      );
-      await this.exportFileWithUrl(url);
-      stls.push(
-        await this.fileService.readExportedStlFileForInstance(instance),
-      );
-    }
-    return stls;
   }
 
   private async exportFileWithUrl(url: string): Promise<void> {

@@ -97,6 +97,17 @@ describe('ExportStatusService', () => {
       );
     });
 
+    it('updates export status state to exported', () => {
+      exportStatusService.exportExported(exportId);
+      expect(watch).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          exportId,
+          state: 'exported',
+          queuedAt: expect.any(Date),
+        }),
+      );
+    });
+
     it('updates export status state to zipping', () => {
       exportStatusService.exportZipping(exportId);
       expect(watch).toHaveBeenLastCalledWith(
@@ -107,6 +118,7 @@ describe('ExportStatusService', () => {
         }),
       );
     });
+
     it('updates export status state to completed', () => {
       exportStatusService.exportCompleted(exportId);
       expect(watch).toHaveBeenLastCalledWith(

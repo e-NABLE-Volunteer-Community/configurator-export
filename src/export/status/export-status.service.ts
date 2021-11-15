@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExportId } from 'src/bom-types-and-schemas';
 import {
   CompletedExportStatus,
+  ExportedExportStatus,
   ExportingExportStatus,
   ExportStatus,
   FailedExportStatus,
@@ -95,6 +96,16 @@ export class ExportStatusService {
     });
   }
 
+  public exportExported(exportId: ExportId) {
+    const prevStatus = this.getExportStatus(exportId);
+    const status: ExportedExportStatus = {
+      exportId,
+      queuedAt: prevStatus.queuedAt,
+      state: 'exported',
+    };
+    this.getSubject(exportId).next(status);
+  }
+
   public exportZipping(exportId: ExportId) {
     const prevStatus = this.getExportStatus(exportId);
     const status: ZippingExportStatus = {
@@ -148,7 +159,7 @@ export class ExportStatusService {
         this.exports.delete(exportId);
         continue;
       }
-      if (status.queuedAt.getTime() < date.getTime() - this.timeoutInMs)
+      if (status.queuedAt.getTime() < new Date().getTime() - this.timeoutInMs)
         this.exportFailed(exportId, new ExportTimedOutError(exportId));
     }
   }

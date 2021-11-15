@@ -63,7 +63,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     documentId: DocumentId,
     workspaceId: WorkspaceId,
     elementId: ElementId,
-  ): Promise<string> {
+  ): Promise<Buffer> {
     const stlUrl = new URL(
       await this.getPartStlExportUrl(documentId, workspaceId, elementId),
     );
@@ -75,7 +75,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     workspaceId: WorkspaceId,
     elementId: ElementId,
     encodedConfiguration: string,
-  ): Promise<string> {
+  ): Promise<Buffer> {
     const stlUrl = new URL(
       await this.getPartStlExportUrl(
         documentId,
@@ -110,7 +110,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     return res.headers.location;
   }
 
-  private async exportPartAsStlAtUrl(url: URL): Promise<string> {
+  private async exportPartAsStlAtUrl(url: URL): Promise<Buffer> {
     const path = url.pathname;
     const search = url.search;
     const query: Record<string, string> = Object.fromEntries(
@@ -125,7 +125,7 @@ export class OnshapeApi extends BaseOnshapeApi {
       method: 'get',
       query,
       path,
-      acceptJson: true,
+      asBuffer: true,
     });
     return res.data;
   }

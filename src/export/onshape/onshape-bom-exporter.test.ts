@@ -9,23 +9,32 @@ import { OnshapeApi } from './onshape-api.js';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { Part } from './onshape-types.js';
+import { ExportStatusService } from '../status/export-status.service.js';
 
 describe('export/onshape/onshape-bom-exporter', () => {
   // let configService: ConfigService;
+  const exportId = '5555';
   let api: OnshapeApi;
+  let exportStatusService: ExportStatusService;
+  let exportStatusWatcher;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ConfigService],
+      imports: [ConfigService, ExportStatusService],
     }).compile();
     const configService = moduleRef.get(ConfigService);
     jest.spyOn(configService, 'get').mockImplementation(() => 'mock_value');
     api = new OnshapeApi(configService);
+
+    exportStatusService = moduleRef.get(ExportStatusService);
+    exportStatusWatcher = jest.fn();
+    exportStatusService
+      .watchExportStatus(exportId)
+      .subscribe(exportStatusWatcher);
   });
 
   describe('OnshapeBomExporter', () => {
     describe('input validation', () => {
-      const exportId = '5555';
       const documentId = '1234',
         workspaceId = '5678';
       it('throws an OnshapeDeviceNotFoundError for unknown device', async () => {
@@ -47,6 +56,7 @@ describe('export/onshape/onshape-bom-exporter', () => {
           exportId,
           bomWithUnknownDevice,
           api,
+          exportStatusService,
         );
 
         const expErr = new OnshapeDeviceNotFoundError(
@@ -81,6 +91,7 @@ describe('export/onshape/onshape-bom-exporter', () => {
           exportId,
           bomWithUnknownParts,
           api,
+          exportStatusService,
         );
 
         const expErr = new OnshapePartsNotFoundError(
@@ -97,7 +108,13 @@ describe('export/onshape/onshape-bom-exporter', () => {
           materials: {},
         } as unknown as OnshapeBom;
         await expect(
-          () => new OnshapeBomExporter(exportId, invalidBom, api),
+          () =>
+            new OnshapeBomExporter(
+              exportId,
+              invalidBom,
+              api,
+              exportStatusService,
+            ),
         ).toThrow(expect.any(OnshapeInvalidBomLocationError));
       });
     });

@@ -2,31 +2,21 @@ import * as R from 'ramda';
 import Ajv, { JSONSchemaType } from 'ajv';
 
 import { OnshapeApi } from './onshape-api.js';
-import { BaseBomExporter, StlFile } from '../base-bom-exporter.js';
-import {
-  DocumentId,
-  ElementId,
-  Part,
-  PartName,
-  WorkspaceId,
-} from './onshape-types.js';
+import { BaseBomExporter } from '../base-bom-exporter.js';
+import { DocumentId, ElementId, Part, WorkspaceId } from './onshape-types.js';
 import {
   BomLocation,
   BomLocationType,
   ExporterFactoryRegistry,
 } from '../exporter-factory-registry.js';
-import {
-  BillOfMaterials,
-  ConfiguredBomLine,
-  DefaultBomLine,
-} from '../../bom-types-and-schemas.js';
+import { BillOfMaterials, BomInstance } from '../../bom-types-and-schemas.js';
 import {
   OnshapeDeviceNotFoundError,
   OnshapeInvalidBomLocationError,
   OnshapePartsNotFoundError,
 } from './errors.js';
 import { InternalServerError } from '../../errors.js';
-import { ConfigService } from '@nestjs/config';
+import { ExportStatusService } from '../status/export-status.service';
 
 export interface OnshapeBom extends BillOfMaterials<BomLocationType.Onshape> {
   location: OnshapeBomLocation;
@@ -55,9 +45,14 @@ ExporterFactoryRegistry.registerBomExporterFactory<
   BomLocationType.Onshape
 >({
   type: BomLocationType.Onshape,
-  make: (id: string, bom: OnshapeBom, configService: ConfigService) => {
+  make: ({ id, billOfMaterials, configService, exportStatusService }) => {
     const api = new OnshapeApi(configService);
-    return new OnshapeBomExporter(id, bom, api);
+    return new OnshapeBomExporter(
+      id,
+      billOfMaterials,
+      api,
+      exportStatusService,
+    );
   },
 });
 
@@ -79,9 +74,10 @@ export class OnshapeBomExporter extends BaseBomExporter<
   constructor(
     protected readonly exportId: string,
     protected readonly billOfMaterials: OnshapeBom,
-    private readonly api: OnshapeApi,
+    protected readonly api: OnshapeApi,
+    protected readonly exportStatusService: ExportStatusService,
   ) {
-    super(exportId, billOfMaterials);
+    super(exportId, billOfMaterials, exportStatusService);
     this.documentId = this.billOfMaterials.location.documentId;
     this.workspaceId = this.billOfMaterials.location.workspaceId;
     this.partsForWorkspacePromise = this.api.getPartsForWorkspace(
@@ -131,46 +127,20 @@ export class OnshapeBomExporter extends BaseBomExporter<
     return parts;
   }
 
-  protected async stlsForDefaultLine(
-    partName: PartName,
-    line: DefaultBomLine,
-  ): Promise<StlFile[]> {
+  protected async stlDataForDefaultLine(partName: string): Promise<Buffer> {
     const elementId = await this.elementIdForPartWithName(partName);
-
-    let i = 0;
-    const stls: StlFile[] = [];
-    const data = await this.stlDataForElement(elementId);
-    R.times(
-      () => ({ name: `${partName}-${i++}.stl`, data }),
-      line.count,
-    ).forEach((stl) => stls.push(stl));
-
-    console.info(`Exported ${partName}.`);
-    return stls;
+    return await this.stlDataForElement(elementId);
   }
 
-  protected async stlsForConfiguredLine(
-    partName: PartName,
-    line: ConfiguredBomLine,
-  ): Promise<StlFile[]> {
+  protected async stlDataForConfiguredLineInstance(
+    partName: string,
+    instance: BomInstance,
+  ): Promise<Buffer> {
     const elementId = await this.elementIdForPartWithName(partName);
-
-    const stlPromises: Promise<StlFile>[] = [];
-    for (const instance of line.instances) {
-      const dataProm = this.stlDataForElementWithConfiguration(
-        elementId,
-        instance.parameters,
-      );
-      stlPromises.push(
-        dataProm
-          .then((data) => ({ name: instance.name + '.stl', data }))
-          .then((file) => {
-            console.info(`Exported ${instance.name}.`);
-            return file;
-          }),
-      );
-    }
-    return Promise.all(stlPromises);
+    return await this.stlDataForElementWithConfiguration(
+      elementId,
+      instance.parameters,
+    );
   }
 
   private async elementIdForPartWithName(partName: string): Promise<ElementId> {
@@ -186,7 +156,7 @@ export class OnshapeBomExporter extends BaseBomExporter<
     return part.elementId;
   }
 
-  private async stlDataForElement(elementId: ElementId): Promise<string> {
+  private async stlDataForElement(elementId: ElementId): Promise<Buffer> {
     return await this.api.exportPartAsStl(
       this.documentId,
       this.workspaceId,
@@ -197,7 +167,7 @@ export class OnshapeBomExporter extends BaseBomExporter<
   private async stlDataForElementWithConfiguration(
     elementId: ElementId,
     parameters: Record<string, string>,
-  ): Promise<string> {
+  ): Promise<Buffer> {
     const encodedConfiguration = await this.api.encodeConfiguration(
       this.documentId,
       elementId,

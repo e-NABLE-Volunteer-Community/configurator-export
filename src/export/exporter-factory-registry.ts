@@ -2,11 +2,13 @@ import type { BaseBomExporter } from './base-bom-exporter.js';
 import { BillOfMaterials } from '../bom-types-and-schemas.js';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { ExportStatusService } from './status/export-status.service';
 
 export enum BomLocationType {
   Fusion360 = 'Fusion360',
   Onshape = 'Onshape',
 }
+
 export interface BomLocation<L extends BomLocationType> {
   type: L;
 }
@@ -16,16 +18,20 @@ export type ExporterFactory<
   L extends B extends BillOfMaterials<infer BL> ? BL : never,
 > = {
   type: L;
-  make: (
+  make: ({
     id: string,
     billOfMaterials: B,
     configService: ConfigService,
-  ) => BaseBomExporter<B, L>;
+    exportStatusService: ExportStatusService,
+  }) => BaseBomExporter<B, L>;
 };
 
 @Injectable()
 export class ExporterFactoryRegistry {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly exportStatusService: ExportStatusService,
+  ) {}
 
   private static exporterFactories: {
     [L in BomLocationType]?: ExporterFactory<BillOfMaterials<L>, L>;
@@ -44,7 +50,12 @@ export class ExporterFactoryRegistry {
       | undefined;
     if (!factory) throw new Error('No ExporterFactory for type: ' + type);
 
-    return factory.make(id, billOfMaterials, this.configService);
+    return factory.make({
+      id,
+      billOfMaterials,
+      configService: this.configService,
+      exportStatusService: this.exportStatusService,
+    });
   }
 
   public static registerBomExporterFactory<
