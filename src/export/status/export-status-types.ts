@@ -1,4 +1,4 @@
-import { ExportId } from 'src/bom-types-and-schemas';
+import { ExportId } from '../../bom-types-and-schemas';
 import { PartName } from '../onshape/onshape-types';
 
 export type ExportStatusState =

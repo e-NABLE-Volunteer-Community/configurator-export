@@ -1,10 +1,10 @@
 import { Global, Module } from '@nestjs/common';
 import { WinstonLokiLoggerService } from './winston-loki-logger.service';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
 @Global()
 @Module({
-  imports: [ConfigService],
+  imports: [ConfigModule],
   providers: [WinstonLokiLoggerService],
   exports: [WinstonLokiLoggerService],
 })

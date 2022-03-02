@@ -145,3 +145,5 @@ Temporary Items
 .apdisk
 
 .env
+output
+secrets

@@ -1,22 +1,24 @@
 import * as R from 'ramda';
 import Ajv, { JSONSchemaType } from 'ajv';
 
-import { OnshapeApi } from './onshape-api.js';
-import { BaseBomExporter } from '../base-bom-exporter.js';
-import { DocumentId, ElementId, Part, WorkspaceId } from './onshape-types.js';
+import { OnshapeApi } from './onshape-api';
+import { BaseBomExporter } from '../base-bom-exporter';
+import { DocumentId, ElementId, Part, WorkspaceId } from './onshape-types';
 import {
   BomLocation,
   BomLocationType,
   ExporterFactoryRegistry,
-} from '../exporter-factory-registry.js';
-import { BillOfMaterials, BomInstance } from '../../bom-types-and-schemas.js';
+} from '../exporter-factory-registry';
+import { BillOfMaterials, BomInstance } from '../../bom-types-and-schemas';
 import {
   OnshapeDeviceNotFoundError,
   OnshapeInvalidBomLocationError,
   OnshapePartsNotFoundError,
-} from './errors.js';
-import { InternalServerError } from '../../errors.js';
+} from './errors';
+import { InternalServerError } from '../../errors';
 import { ExportStatusService } from '../status/export-status.service';
+import { Injectable } from '@nestjs/common';
+import { AccessAndRefreshToken } from './base-onshape-api';
 
 export interface OnshapeBom extends BillOfMaterials<BomLocationType.Onshape> {
   location: OnshapeBomLocation;
@@ -45,8 +47,9 @@ ExporterFactoryRegistry.registerBomExporterFactory<
   BomLocationType.Onshape
 >({
   type: BomLocationType.Onshape,
-  make: ({ id, billOfMaterials, configService, exportStatusService }) => {
-    const api = new OnshapeApi(configService);
+  make: ({ id, billOfMaterials, configService, exportStatusService, auth }) => {
+    if (!auth) throw new Error('Cannot create OnshapeBomExporter without auth');
+    const api = new OnshapeApi(configService, auth);
     return new OnshapeBomExporter(
       id,
       billOfMaterials,
@@ -104,11 +107,13 @@ export class OnshapeBomExporter extends BaseBomExporter<
     const expectedParts = R.keys(this.billOfMaterials.materials);
 
     const missingParts = R.difference(expectedParts, availableParts);
-    if (missingParts.length)
+    if (missingParts.length) {
+      console.log({ expectedParts, availableParts });
       throw new OnshapePartsNotFoundError(
         missingParts,
         this.billOfMaterials.name,
       );
+    }
   }
 
   private async getPartsOrThrow(): Promise<Part[]> {

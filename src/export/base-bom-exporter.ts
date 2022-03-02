@@ -8,8 +8,8 @@ import {
   ConfiguredBomLine,
   DefaultBomLine,
   isDefaultBomLine,
-} from '../bom-types-and-schemas.js';
-import { InvalidBomError } from './errors.js';
+} from '../bom-types-and-schemas';
+import { InvalidBomError } from './errors';
 import { ExportStatusService } from './status/export-status.service';
 import { PartName } from './onshape/onshape-types';
 
@@ -72,7 +72,6 @@ export abstract class BaseBomExporter<
       stlsPromises.push(this.exportBomLine(partName, line));
     }
     const stls: StlFile[] = R.flatten(await Promise.all(stlsPromises));
-    console.info('Export done.');
     this.exportStatusService.exportExported(this.exportId);
     return stls;
   }

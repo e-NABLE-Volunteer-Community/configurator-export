@@ -1,46 +1,46 @@
 import {
   eNableConfiguratorError,
   errorCode,
-  ErrorCodes,
   errorType,
   ErrorTypes,
-} from '@configurator/e-nable.configurator.common.errors'
-import { ErrorObject } from 'ajv'
+} from '../error';
+import { ErrorCodes } from '../error-codes';
+import { ErrorObject } from 'ajv';
 
 export class InvalidBomError extends eNableConfiguratorError<ErrorCodes.InvalidBom> {
   readonly [errorCode] = ErrorCodes.InvalidBom;
-  readonly [errorType] = ErrorTypes.BadRequest
+  readonly [errorType] = ErrorTypes.BadRequest;
 
   constructor(
-    private readonly errors: ErrorObject<any, any, any>[] | null | undefined
+    private readonly errors: ErrorObject<any, any, any>[] | null | undefined,
   ) {
-    super(`Bill of materials was invalid`)
+    super(`Bill of materials was invalid`);
   }
 }
 
 export abstract class InvalidBomLocationError extends eNableConfiguratorError<ErrorCodes.InvalidBomLocation> {
   readonly [errorCode] = ErrorCodes.InvalidBomLocation;
-  readonly [errorType] = ErrorTypes.BadRequest
+  readonly [errorType] = ErrorTypes.BadRequest;
 
   protected constructor(message: string) {
-    super(message)
+    super(message);
   }
 }
 
 export abstract class DeviceNotFoundError extends eNableConfiguratorError<ErrorCodes.DeviceNotFound> {
   readonly [errorCode] = ErrorCodes.DeviceNotFound;
-  readonly [errorType] = ErrorTypes.NotFound
+  readonly [errorType] = ErrorTypes.NotFound;
 
   protected constructor(message: string) {
-    super(message)
+    super(message);
   }
 }
 
 export abstract class PartsNotFoundError extends eNableConfiguratorError<ErrorCodes.PartNotFound> {
   readonly [errorCode] = ErrorCodes.PartNotFound;
-  readonly [errorType] = ErrorTypes.NotFound
+  readonly [errorType] = ErrorTypes.NotFound;
 
   protected constructor(message: string) {
-    super(message)
+    super(message);
   }
 }

@@ -4,11 +4,13 @@ import {
   BomLocationType,
 } from './export/exporter-factory-registry.js';
 import { PartName } from './export/onshape/onshape-types.js';
+import { AccessAndRefreshToken } from './export/onshape/base-onshape-api';
 
 export type ExportId = string;
 export interface BillOfMaterials<L extends BomLocationType = BomLocationType> {
   name: string;
   location: BomLocation<L>;
+  authorization?: AccessAndRefreshToken;
   materials: Record<PartName, BomLine>;
 }
 
@@ -32,6 +34,15 @@ export const BillOfMaterialsSchema: JSONSchemaType<BillOfMaterials> = {
     name: { type: 'string' },
     // Intentionally incomplete. This is verified by concrete subclasses.
     location: { type: 'object', required: [] },
+    authorization: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string' },
+        refreshToken: { type: 'string' },
+      },
+      nullable: true,
+      required: ['accessToken', 'refreshToken'],
+    },
     materials: {
       type: 'object',
       required: [],

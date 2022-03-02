@@ -1,16 +1,17 @@
 import { Fusion360ExportUrlBuilder } from './fusion-360-export-url-builder';
 import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { Fusion360FileService } from './fusion-360-bom-exporter';
+import { Fusion360FileService } from './fusion360-bom-exporter';
+import { configServiceTestProvider } from '../../testware/config-service';
 
 describe('fusion-360/fusion-360-export-url-builder', () => {
   const outputDir = '/out';
-  const deviceDir = '/in/device';
+  const deviceDir = '/device';
 
   let fileService: Fusion360FileService;
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ConfigService],
+      providers: [configServiceTestProvider],
     }).compile();
     const configService = moduleRef.get(ConfigService);
     jest.spyOn(configService, 'get').mockImplementation(() => '/in');

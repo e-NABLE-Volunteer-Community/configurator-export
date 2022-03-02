@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { WinstonLokiLoggerService } from '../logger/winston-loki-logger.service';
 import * as uuid from 'uuid';
-import { Fusion360Bom } from './fusion-360/fusion-360-bom-exporter';
+import { Fusion360Bom } from './fusion-360/fusion360-bom-exporter';
 import { BomLocationType } from './exporter-factory-registry';
 import { BaseBomExporter } from './base-bom-exporter';
 import { PartName } from './onshape/onshape-types';

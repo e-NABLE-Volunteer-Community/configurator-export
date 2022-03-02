@@ -1,10 +1,10 @@
 import {
   eNableConfiguratorError,
   errorCode,
-  ErrorCodes,
   errorType,
   ErrorTypes,
-} from '@configurator/e-nable.configurator.common.errors';
+} from '../../error';
+import { ErrorCodes } from '../../error-codes';
 import { ExportId } from '../../bom-types-and-schemas';
 
 export class ExportNotFoundError extends eNableConfiguratorError<ErrorCodes.ExportNotFound> {

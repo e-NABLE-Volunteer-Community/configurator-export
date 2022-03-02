@@ -1,7 +1,6 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import winston, { createLogger, transports } from 'winston';
 import LokiTransport from 'winston-loki';
-import * as R from 'ramda';
 import { ConfigService } from '@nestjs/config';
 import { InternalServerError } from '../errors';
 
@@ -82,9 +81,7 @@ export class WinstonLokiLoggerService implements LoggerService {
       `Failed to create log message; Missing ${env} env var`;
     const env = this.configService.get<string>('NODE_ENV');
     if (!env) throw new InternalServerError(errMsgFor('NODE_ENV'));
-
-    return R.merge(labels, {
-      env: process.env.NODE_ENV,
-    });
+    labels.env = process.env.NODE_ENV;
+    return labels;
   }
 }

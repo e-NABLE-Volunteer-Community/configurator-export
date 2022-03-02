@@ -1,7 +1,7 @@
 import { PartName } from '../onshape/onshape-types';
 import * as path from 'path';
 import { BomInstance } from '../../bom-types-and-schemas';
-import { Fusion360FileService } from './fusion-360-bom-exporter';
+import { Fusion360FileService } from './fusion360-bom-exporter';
 
 type Fusion360PrivateInfo = {
   filename: string;

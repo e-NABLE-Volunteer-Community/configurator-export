@@ -1,4 +1,4 @@
-import { BaseOnshapeApi } from './base-onshape-api.js';
+import { BaseOnshapeApi } from './base-onshape-api';
 import querystring from 'querystring';
 import * as R from 'ramda';
 import type {
@@ -7,10 +7,13 @@ import type {
   ElementId,
   Part,
   WorkspaceId,
-} from './onshape-types.js';
+} from './onshape-types';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class OnshapeApi extends BaseOnshapeApi {
   public async getDocument(documentId: DocumentId): Promise<Document> {
+    console.log('getDocument');
     const res = await this.sendRequest({
       method: 'get',
       resource: 'documents',
@@ -25,6 +28,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     documentId: DocumentId,
     workspaceId: WorkspaceId,
   ): Promise<Part[] | { status: number }> {
+    console.log('getPartsForWorkspace');
     const res = await this.sendRequest({
       method: 'get',
       resource: 'parts',
@@ -39,6 +43,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     elementId: ElementId,
     parameters: Record<string, string>,
   ): Promise<string> {
+    console.log('encodeConfiguration');
     const data = R.objOf(
       'parameters',
       R.toPairs(parameters).map(([k, v]) => ({
@@ -64,6 +69,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     workspaceId: WorkspaceId,
     elementId: ElementId,
   ): Promise<Buffer> {
+    console.log('exportPartAsStl');
     const stlUrl = new URL(
       await this.getPartStlExportUrl(documentId, workspaceId, elementId),
     );
@@ -76,6 +82,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     elementId: ElementId,
     encodedConfiguration: string,
   ): Promise<Buffer> {
+    console.log('exportPartAsStlWithConfiguration');
     const stlUrl = new URL(
       await this.getPartStlExportUrl(
         documentId,
@@ -94,6 +101,7 @@ export class OnshapeApi extends BaseOnshapeApi {
     elementId: ElementId,
     encodedConfiguration?: string,
   ): Promise<string> {
+    console.log('getPartStlExportUrl');
     const res = await this.sendRequest({
       method: 'get',
       resource: 'partstudios',
@@ -111,6 +119,7 @@ export class OnshapeApi extends BaseOnshapeApi {
   }
 
   private async exportPartAsStlAtUrl(url: URL): Promise<Buffer> {
+    console.log('exportPartAsStlAtUrl');
     const path = url.pathname;
     const search = url.search;
     const query: Record<string, string> = Object.fromEntries(

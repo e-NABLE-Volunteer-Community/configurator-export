@@ -3,6 +3,7 @@ import { BillOfMaterials } from '../bom-types-and-schemas.js';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { ExportStatusService } from './status/export-status.service';
+import { AccessAndRefreshToken } from './onshape/base-onshape-api';
 
 export enum BomLocationType {
   Fusion360 = 'Fusion360',
@@ -13,17 +14,19 @@ export interface BomLocation<L extends BomLocationType> {
   type: L;
 }
 
+export type MakeArgs<B extends BillOfMaterials> = {
+  id: string;
+  billOfMaterials: B;
+  configService: ConfigService;
+  exportStatusService: ExportStatusService;
+  auth?: AccessAndRefreshToken;
+};
 export type ExporterFactory<
   B extends BillOfMaterials,
   L extends B extends BillOfMaterials<infer BL> ? BL : never,
 > = {
   type: L;
-  make: ({
-    id: string,
-    billOfMaterials: B,
-    configService: ConfigService,
-    exportStatusService: ExportStatusService,
-  }) => BaseBomExporter<B, L>;
+  make: (args: MakeArgs<B>) => BaseBomExporter<B, L>;
 };
 
 @Injectable()
@@ -40,7 +43,11 @@ export class ExporterFactoryRegistry {
   public exporterForBom<
     B extends BillOfMaterials,
     L extends B extends BillOfMaterials<infer BL> ? BL : never,
-  >(id: string, billOfMaterials: B): BaseBomExporter<B, L> {
+  >(
+    id: string,
+    billOfMaterials: B,
+    auth?: AccessAndRefreshToken,
+  ): BaseBomExporter<B, L> {
     const { type } = billOfMaterials.location;
 
     // Cast is safe, the key is pulled from exporter.locationType which
@@ -55,6 +62,7 @@ export class ExporterFactoryRegistry {
       billOfMaterials,
       configService: this.configService,
       exportStatusService: this.exportStatusService,
+      auth,
     });
   }
 

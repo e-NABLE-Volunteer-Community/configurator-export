@@ -1,36 +1,33 @@
-import { OnshapeBom, OnshapeBomExporter } from './onshape-bom-exporter.js';
+import { OnshapeBom, OnshapeBomExporter } from './onshape-bom-exporter';
 import {
   OnshapeDeviceNotFoundError,
   OnshapeInvalidBomLocationError,
   OnshapePartsNotFoundError,
-} from './errors.js';
-import { BomLocationType } from '../exporter-factory-registry.js';
-import { OnshapeApi } from './onshape-api.js';
+} from './errors';
+import { BomLocationType } from '../exporter-factory-registry';
+import { OnshapeApi } from './onshape-api';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
-import { Part } from './onshape-types.js';
-import { ExportStatusService } from '../status/export-status.service.js';
+import { Part } from './onshape-types';
+import { ExportStatusService } from '../status/export-status.service';
+import { WinstonLokiLoggerModule } from '../../logger/winston-loki-logger.module';
+import { configServiceTestProvider } from '../../testware/config-service';
 
 describe('export/onshape/onshape-bom-exporter', () => {
-  // let configService: ConfigService;
   const exportId = '5555';
   let api: OnshapeApi;
   let exportStatusService: ExportStatusService;
-  let exportStatusWatcher;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ConfigService, ExportStatusService],
+      imports: [WinstonLokiLoggerModule],
+      providers: [configServiceTestProvider, ExportStatusService],
     }).compile();
     const configService = moduleRef.get(ConfigService);
     jest.spyOn(configService, 'get').mockImplementation(() => 'mock_value');
     api = new OnshapeApi(configService);
 
     exportStatusService = moduleRef.get(ExportStatusService);
-    exportStatusWatcher = jest.fn();
-    exportStatusService
-      .watchExportStatus(exportId)
-      .subscribe(exportStatusWatcher);
   });
 
   describe('OnshapeBomExporter', () => {

@@ -1,14 +1,6 @@
-import {
-  Fusion360Bom,
-  Fusion360BomExporter,
-  Fusion360FileService,
-} from './fusion-360-bom-exporter';
+import { Fusion360Bom, Fusion360BomExporter, Fusion360FileService } from './fusion360-bom-exporter';
 import * as fs from 'fs';
-import {
-  Fusion360DeviceNotFoundError,
-  Fusion360InvalidBomLocationError,
-  Fusion360PartsNotFoundError,
-} from './errors';
+import { Fusion360DeviceNotFoundError, Fusion360InvalidBomLocationError, Fusion360PartsNotFoundError } from './errors';
 import { Fusion360ExportUrlBuilder } from './fusion-360-export-url-builder';
 import { Test } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -230,7 +222,7 @@ describe('export/fusion-360/fusion-360-bom-exporter', () => {
 
     describe('exportBom', () => {
       // If Fusion was not already opened, it might take a while to start.
-      jest.setTimeout(60000);
+      jest.setTimeout(90000);
 
       it('returns appropriate STL files for test bom', async () => {
         const exporter = new Fusion360BomExporter(

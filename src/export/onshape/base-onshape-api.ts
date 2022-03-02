@@ -45,6 +45,22 @@ const chars = [
 
 const sampleArray = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 
+export type AccessAndRefreshToken = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export type PublicAndPrivateKeys = {
+  privateKey: string;
+  publicKey: string;
+};
+
+const isAccessAndRefreshToken = (unk: unknown): unk is AccessAndRefreshToken =>
+  typeof unk === 'object' &&
+  unk !== null &&
+  'accessToken' in unk &&
+  'refreshToken' in unk;
+
 export abstract class BaseOnshapeApi {
   private readonly baseUrl: string = 'https://cad.onshape.com';
   private readonly axios = axios;
@@ -52,7 +68,10 @@ export abstract class BaseOnshapeApi {
   private readonly publicKey: string;
   private readonly privateKey: string;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly auth?: AccessAndRefreshToken,
+  ) {
     const publicKey = configService.get<string>('ONSHAPE_PUBLIC_API_KEY');
     if (!publicKey) throw new InternalServerError('Could not get publicKey');
     const privateKey = configService.get<string>('ONSHAPE_PRIVATE_API_KEY');
@@ -77,15 +96,18 @@ export abstract class BaseOnshapeApi {
     return querystring.stringify(query);
   }
 
-  private buildHeaders(args: {
-    extraHeaders?: Record<string, string>;
-    acceptJson?: true;
-    method: string;
-    nonce: string;
-    date: Date;
-    path: string;
-    query?: Record<string, string>;
-  }) {
+  private buildHeaders(
+    auth: AccessAndRefreshToken | PublicAndPrivateKeys,
+    args: {
+      extraHeaders?: Record<string, string>;
+      acceptJson?: true;
+      method: string;
+      nonce: string;
+      date: Date;
+      path: string;
+      query?: Record<string, string>;
+    },
+  ) {
     const {
       extraHeaders = {},
       method,
@@ -104,6 +126,13 @@ export abstract class BaseOnshapeApi {
       Date: date.toUTCString(),
       'On-Nonce': nonce,
     };
+
+    if (isAccessAndRefreshToken(auth)) {
+      headers['Authorization'] = `Bearer ${auth.accessToken}`;
+      console.log(headers);
+      return headers;
+    }
+
     const hmacString = [
       // This format defined by Onshape auth
       method,
@@ -116,10 +145,10 @@ export abstract class BaseOnshapeApi {
     ]
       .join('\n')
       .toLowerCase();
-    const signature = createHmac('sha256', this.privateKey)
+    const signature = createHmac('sha256', auth.privateKey)
       .update(hmacString)
       .digest('base64');
-    headers['Authorization'] = `On ${this.publicKey}:HmacSHA256:${signature}`;
+    headers['Authorization'] = `On ${auth.publicKey}:HmacSHA256:${signature}`;
 
     return headers;
   }
@@ -215,6 +244,8 @@ export abstract class BaseOnshapeApi {
     acceptJson?: true;
     longWorkspaces?: true;
     manualRedirect?: true;
+
+    auth?: AccessAndRefreshToken;
   }) {
     const {
       method,
@@ -250,15 +281,18 @@ export abstract class BaseOnshapeApi {
     return this.axios.request({
       url: this.baseUrl + path,
       method,
-      headers: this.buildHeaders({
-        acceptJson,
-        extraHeaders,
-        method,
-        nonce: this.createNonce(),
-        date: new Date(),
-        path,
-        query,
-      }),
+      headers: this.buildHeaders(
+        this.auth ?? { publicKey: this.publicKey, privateKey: this.privateKey },
+        {
+          acceptJson,
+          extraHeaders,
+          method,
+          nonce: this.createNonce(),
+          date: new Date(),
+          path,
+          query,
+        },
+      ),
       data,
       maxRedirects: manualRedirect ? 0 : undefined,
       validateStatus: manualRedirect ? (status) => status === 307 : null,
@@ -291,15 +325,18 @@ export abstract class BaseOnshapeApi {
     return this.axios.request({
       url: this.baseUrl + path,
       method,
-      headers: this.buildHeaders({
-        acceptJson,
-        extraHeaders,
-        method,
-        nonce: this.createNonce(),
-        date: new Date(),
-        path,
-        query,
-      }),
+      headers: this.buildHeaders(
+        this.auth ?? { publicKey: this.publicKey, privateKey: this.privateKey },
+        {
+          acceptJson,
+          extraHeaders,
+          method,
+          nonce: this.createNonce(),
+          date: new Date(),
+          path,
+          query,
+        },
+      ),
       data,
       responseType: asBuffer ? 'arraybuffer' : undefined,
       maxRedirects: manualRedirect ? 0 : undefined,

@@ -3,8 +3,8 @@ import {
   errorCode,
   errorType,
   ErrorTypes,
-  ErrorCodes,
-} from '@configurator/e-nable.configurator.common.errors';
+} from './error';
+import { ErrorCodes } from './error-codes';
 
 export class InternalServerError extends eNableConfiguratorError<ErrorCodes.Unknown> {
   readonly [errorType]: ErrorTypes.InternalServerError;

@@ -1,0 +1,966 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ComponentOverview {
+  id: ID!
+  componentId: Int!
+  name: String!
+  description: String
+  locale: String!
+  component: Component!
+}
+
+type ComponentCount {
+  componentOverview: Int!
+}
+
+type Component {
+  id: ID!
+  deviceId: Int!
+  location: JSON!
+  export_location: String!
+  device: Device!
+  componentOverview: [ComponentOverview!]
+  _count: ComponentCount!
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+
+type AuthorBio {
+  id: ID!
+  authorId: Int!
+  bio: String!
+  locale: String!
+  author: Author!
+}
+
+type AuthorUrl {
+  id: ID!
+  authorId: Int!
+  url: String!
+  author: Author!
+}
+
+type AuthorCount {
+  authorBio: Int!
+  authorUrl: Int!
+  deviceAuthor: Int!
+}
+
+type Author {
+  id: ID!
+  name: String!
+  image: String
+  email: String
+  authorBio: [AuthorBio!]
+  authorUrl: [AuthorUrl!]
+  deviceAuthor: [DeviceAuthor!]
+  _count: AuthorCount!
+}
+
+type DeviceAuthor {
+  deviceId: Int!
+  authorId: Int!
+  device: Device!
+  author: Author!
+}
+
+type DeviceExtra {
+  id: ID!
+  deviceId: Int!
+  name: String!
+  description: String!
+  location: JSON!
+  export_location: String!
+  locale: String
+  device: Device!
+}
+
+type DeviceImage {
+  id: ID!
+  deviceId: Int!
+  image: String!
+  locale: String
+  device: Device!
+}
+
+type DeviceOverview {
+  id: ID!
+  deviceId: Int!
+  name: String!
+  description: String!
+  locale: String!
+  device: Device!
+}
+
+type DeviceCount {
+  components: Int!
+  deviceAuthors: Int!
+  deviceExtras: Int!
+  deviceImages: Int!
+  deviceOverviews: Int!
+}
+
+type Device {
+  id: ID!
+  components: [Component!]
+  deviceAuthors: [DeviceAuthor!]
+  deviceExtras: [DeviceExtra!]
+  deviceImages: [DeviceImage!]
+  deviceOverviews: [DeviceOverview!]
+  _count: DeviceCount!
+}
+
+type Query {
+  devices: [Device!]!
+  device(id: Int!): Device!
+}
+
+type Mutation {
+  createDevice(data: DeviceCreateInput!): Device!
+  updateDevice(data: DeviceUpdateInput!, where: DeviceWhereUniqueInput!): Device!
+  removeDevice(id: Int!): Device!
+}
+
+input DeviceCreateInput {
+  components: ComponentCreateNestedManyWithoutDeviceInput
+  deviceAuthors: DeviceAuthorCreateNestedManyWithoutDeviceInput
+  deviceExtras: DeviceExtraCreateNestedManyWithoutDeviceInput
+  deviceImages: DeviceImageCreateNestedManyWithoutDeviceInput
+  deviceOverviews: DeviceOverviewCreateNestedManyWithoutDeviceInput
+}
+
+input ComponentCreateNestedManyWithoutDeviceInput {
+  create: [ComponentCreateWithoutDeviceInput!]
+  connectOrCreate: [ComponentCreateOrConnectWithoutDeviceInput!]
+  createMany: ComponentCreateManyDeviceInputEnvelope
+  connect: [ComponentWhereUniqueInput!]
+}
+
+input ComponentCreateWithoutDeviceInput {
+  location: JSON!
+  export_location: String!
+  componentOverview: ComponentOverviewCreateNestedManyWithoutComponentInput
+}
+
+input ComponentOverviewCreateNestedManyWithoutComponentInput {
+  create: [ComponentOverviewCreateWithoutComponentInput!]
+  connectOrCreate: [ComponentOverviewCreateOrConnectWithoutComponentInput!]
+  createMany: ComponentOverviewCreateManyComponentInputEnvelope
+  connect: [ComponentOverviewWhereUniqueInput!]
+}
+
+input ComponentOverviewCreateWithoutComponentInput {
+  name: String!
+  description: String
+  locale: String!
+}
+
+input ComponentOverviewCreateOrConnectWithoutComponentInput {
+  where: ComponentOverviewWhereUniqueInput!
+  create: ComponentOverviewCreateWithoutComponentInput!
+}
+
+input ComponentOverviewWhereUniqueInput {
+  id: Int
+}
+
+input ComponentOverviewCreateManyComponentInputEnvelope {
+  data: [ComponentOverviewCreateManyComponentInput!]!
+  skipDuplicates: Boolean
+}
+
+input ComponentOverviewCreateManyComponentInput {
+  id: Int
+  name: String!
+  description: String
+  locale: String!
+}
+
+input ComponentCreateOrConnectWithoutDeviceInput {
+  where: ComponentWhereUniqueInput!
+  create: ComponentCreateWithoutDeviceInput!
+}
+
+input ComponentWhereUniqueInput {
+  id: Int
+}
+
+input ComponentCreateManyDeviceInputEnvelope {
+  data: [ComponentCreateManyDeviceInput!]!
+  skipDuplicates: Boolean
+}
+
+input ComponentCreateManyDeviceInput {
+  id: Int
+  location: JSON!
+  export_location: String!
+}
+
+input DeviceAuthorCreateNestedManyWithoutDeviceInput {
+  create: [DeviceAuthorCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceAuthorCreateOrConnectWithoutDeviceInput!]
+  createMany: DeviceAuthorCreateManyDeviceInputEnvelope
+  connect: [DeviceAuthorWhereUniqueInput!]
+}
+
+input DeviceAuthorCreateWithoutDeviceInput {
+  author: AuthorCreateNestedOneWithoutDeviceAuthorInput!
+}
+
+input AuthorCreateNestedOneWithoutDeviceAuthorInput {
+  create: AuthorCreateWithoutDeviceAuthorInput
+  connectOrCreate: AuthorCreateOrConnectWithoutDeviceAuthorInput
+  connect: AuthorWhereUniqueInput
+}
+
+input AuthorCreateWithoutDeviceAuthorInput {
+  name: String!
+  image: String
+  email: String
+  authorBio: AuthorBioCreateNestedManyWithoutAuthorInput
+  authorUrl: AuthorUrlCreateNestedManyWithoutAuthorInput
+}
+
+input AuthorBioCreateNestedManyWithoutAuthorInput {
+  create: [AuthorBioCreateWithoutAuthorInput!]
+  connectOrCreate: [AuthorBioCreateOrConnectWithoutAuthorInput!]
+  createMany: AuthorBioCreateManyAuthorInputEnvelope
+  connect: [AuthorBioWhereUniqueInput!]
+}
+
+input AuthorBioCreateWithoutAuthorInput {
+  bio: String!
+  locale: String!
+}
+
+input AuthorBioCreateOrConnectWithoutAuthorInput {
+  where: AuthorBioWhereUniqueInput!
+  create: AuthorBioCreateWithoutAuthorInput!
+}
+
+input AuthorBioWhereUniqueInput {
+  id: Int
+}
+
+input AuthorBioCreateManyAuthorInputEnvelope {
+  data: [AuthorBioCreateManyAuthorInput!]!
+  skipDuplicates: Boolean
+}
+
+input AuthorBioCreateManyAuthorInput {
+  id: Int
+  bio: String!
+  locale: String!
+}
+
+input AuthorUrlCreateNestedManyWithoutAuthorInput {
+  create: [AuthorUrlCreateWithoutAuthorInput!]
+  connectOrCreate: [AuthorUrlCreateOrConnectWithoutAuthorInput!]
+  createMany: AuthorUrlCreateManyAuthorInputEnvelope
+  connect: [AuthorUrlWhereUniqueInput!]
+}
+
+input AuthorUrlCreateWithoutAuthorInput {
+  url: String!
+}
+
+input AuthorUrlCreateOrConnectWithoutAuthorInput {
+  where: AuthorUrlWhereUniqueInput!
+  create: AuthorUrlCreateWithoutAuthorInput!
+}
+
+input AuthorUrlWhereUniqueInput {
+  id: Int
+}
+
+input AuthorUrlCreateManyAuthorInputEnvelope {
+  data: [AuthorUrlCreateManyAuthorInput!]!
+  skipDuplicates: Boolean
+}
+
+input AuthorUrlCreateManyAuthorInput {
+  id: Int
+  url: String!
+}
+
+input AuthorCreateOrConnectWithoutDeviceAuthorInput {
+  where: AuthorWhereUniqueInput!
+  create: AuthorCreateWithoutDeviceAuthorInput!
+}
+
+input AuthorWhereUniqueInput {
+  id: Int
+}
+
+input DeviceAuthorCreateOrConnectWithoutDeviceInput {
+  where: DeviceAuthorWhereUniqueInput!
+  create: DeviceAuthorCreateWithoutDeviceInput!
+}
+
+input DeviceAuthorWhereUniqueInput {
+  deviceId_authorId: DeviceAuthorDeviceIdAuthorIdCompoundUniqueInput
+}
+
+input DeviceAuthorDeviceIdAuthorIdCompoundUniqueInput {
+  deviceId: Int!
+  authorId: Int!
+}
+
+input DeviceAuthorCreateManyDeviceInputEnvelope {
+  data: [DeviceAuthorCreateManyDeviceInput!]!
+  skipDuplicates: Boolean
+}
+
+input DeviceAuthorCreateManyDeviceInput {
+  authorId: Int!
+}
+
+input DeviceExtraCreateNestedManyWithoutDeviceInput {
+  create: [DeviceExtraCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceExtraCreateOrConnectWithoutDeviceInput!]
+  createMany: DeviceExtraCreateManyDeviceInputEnvelope
+  connect: [DeviceExtraWhereUniqueInput!]
+}
+
+input DeviceExtraCreateWithoutDeviceInput {
+  name: String!
+  description: String!
+  location: JSON!
+  export_location: String!
+  locale: String
+}
+
+input DeviceExtraCreateOrConnectWithoutDeviceInput {
+  where: DeviceExtraWhereUniqueInput!
+  create: DeviceExtraCreateWithoutDeviceInput!
+}
+
+input DeviceExtraWhereUniqueInput {
+  id: Int
+}
+
+input DeviceExtraCreateManyDeviceInputEnvelope {
+  data: [DeviceExtraCreateManyDeviceInput!]!
+  skipDuplicates: Boolean
+}
+
+input DeviceExtraCreateManyDeviceInput {
+  id: Int
+  name: String!
+  description: String!
+  location: JSON!
+  export_location: String!
+  locale: String
+}
+
+input DeviceImageCreateNestedManyWithoutDeviceInput {
+  create: [DeviceImageCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceImageCreateOrConnectWithoutDeviceInput!]
+  createMany: DeviceImageCreateManyDeviceInputEnvelope
+  connect: [DeviceImageWhereUniqueInput!]
+}
+
+input DeviceImageCreateWithoutDeviceInput {
+  image: String!
+  locale: String
+}
+
+input DeviceImageCreateOrConnectWithoutDeviceInput {
+  where: DeviceImageWhereUniqueInput!
+  create: DeviceImageCreateWithoutDeviceInput!
+}
+
+input DeviceImageWhereUniqueInput {
+  id: Int
+}
+
+input DeviceImageCreateManyDeviceInputEnvelope {
+  data: [DeviceImageCreateManyDeviceInput!]!
+  skipDuplicates: Boolean
+}
+
+input DeviceImageCreateManyDeviceInput {
+  id: Int
+  image: String!
+  locale: String
+}
+
+input DeviceOverviewCreateNestedManyWithoutDeviceInput {
+  create: [DeviceOverviewCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceOverviewCreateOrConnectWithoutDeviceInput!]
+  createMany: DeviceOverviewCreateManyDeviceInputEnvelope
+  connect: [DeviceOverviewWhereUniqueInput!]
+}
+
+input DeviceOverviewCreateWithoutDeviceInput {
+  name: String!
+  description: String!
+  locale: String!
+}
+
+input DeviceOverviewCreateOrConnectWithoutDeviceInput {
+  where: DeviceOverviewWhereUniqueInput!
+  create: DeviceOverviewCreateWithoutDeviceInput!
+}
+
+input DeviceOverviewWhereUniqueInput {
+  id: Int
+}
+
+input DeviceOverviewCreateManyDeviceInputEnvelope {
+  data: [DeviceOverviewCreateManyDeviceInput!]!
+  skipDuplicates: Boolean
+}
+
+input DeviceOverviewCreateManyDeviceInput {
+  id: Int
+  name: String!
+  description: String!
+  locale: String!
+}
+
+input DeviceUpdateInput {
+  components: ComponentUpdateManyWithoutDeviceInput
+  deviceAuthors: DeviceAuthorUpdateManyWithoutDeviceInput
+  deviceExtras: DeviceExtraUpdateManyWithoutDeviceInput
+  deviceImages: DeviceImageUpdateManyWithoutDeviceInput
+  deviceOverviews: DeviceOverviewUpdateManyWithoutDeviceInput
+}
+
+input ComponentUpdateManyWithoutDeviceInput {
+  create: [ComponentCreateWithoutDeviceInput!]
+  connectOrCreate: [ComponentCreateOrConnectWithoutDeviceInput!]
+  upsert: [ComponentUpsertWithWhereUniqueWithoutDeviceInput!]
+  createMany: ComponentCreateManyDeviceInputEnvelope
+  set: [ComponentWhereUniqueInput!]
+  disconnect: [ComponentWhereUniqueInput!]
+  delete: [ComponentWhereUniqueInput!]
+  connect: [ComponentWhereUniqueInput!]
+  update: [ComponentUpdateWithWhereUniqueWithoutDeviceInput!]
+  updateMany: [ComponentUpdateManyWithWhereWithoutDeviceInput!]
+  deleteMany: [ComponentScalarWhereInput!]
+}
+
+input ComponentUpsertWithWhereUniqueWithoutDeviceInput {
+  where: ComponentWhereUniqueInput!
+  update: ComponentUpdateWithoutDeviceInput!
+  create: ComponentCreateWithoutDeviceInput!
+}
+
+input ComponentUpdateWithoutDeviceInput {
+  location: JSON
+  export_location: StringFieldUpdateOperationsInput
+  componentOverview: ComponentOverviewUpdateManyWithoutComponentInput
+}
+
+input StringFieldUpdateOperationsInput {
+  set: String
+}
+
+input ComponentOverviewUpdateManyWithoutComponentInput {
+  create: [ComponentOverviewCreateWithoutComponentInput!]
+  connectOrCreate: [ComponentOverviewCreateOrConnectWithoutComponentInput!]
+  upsert: [ComponentOverviewUpsertWithWhereUniqueWithoutComponentInput!]
+  createMany: ComponentOverviewCreateManyComponentInputEnvelope
+  set: [ComponentOverviewWhereUniqueInput!]
+  disconnect: [ComponentOverviewWhereUniqueInput!]
+  delete: [ComponentOverviewWhereUniqueInput!]
+  connect: [ComponentOverviewWhereUniqueInput!]
+  update: [ComponentOverviewUpdateWithWhereUniqueWithoutComponentInput!]
+  updateMany: [ComponentOverviewUpdateManyWithWhereWithoutComponentInput!]
+  deleteMany: [ComponentOverviewScalarWhereInput!]
+}
+
+input ComponentOverviewUpsertWithWhereUniqueWithoutComponentInput {
+  where: ComponentOverviewWhereUniqueInput!
+  update: ComponentOverviewUpdateWithoutComponentInput!
+  create: ComponentOverviewCreateWithoutComponentInput!
+}
+
+input ComponentOverviewUpdateWithoutComponentInput {
+  name: StringFieldUpdateOperationsInput
+  description: NullableStringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input NullableStringFieldUpdateOperationsInput {
+  set: String
+}
+
+input ComponentOverviewUpdateWithWhereUniqueWithoutComponentInput {
+  where: ComponentOverviewWhereUniqueInput!
+  data: ComponentOverviewUpdateWithoutComponentInput!
+}
+
+input ComponentOverviewUpdateManyWithWhereWithoutComponentInput {
+  where: ComponentOverviewScalarWhereInput!
+  data: ComponentOverviewUpdateManyMutationInput!
+}
+
+input ComponentOverviewScalarWhereInput {
+  AND: [ComponentOverviewScalarWhereInput!]
+  OR: [ComponentOverviewScalarWhereInput!]
+  NOT: [ComponentOverviewScalarWhereInput!]
+  id: IntFilter
+  componentId: IntFilter
+  name: StringFilter
+  description: StringNullableFilter
+  locale: StringFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: NestedIntFilter
+}
+
+input NestedIntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: NestedIntFilter
+}
+
+input StringFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringFilter
+}
+
+input NestedStringFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringFilter
+}
+
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringNullableFilter
+}
+
+input NestedStringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  not: NestedStringNullableFilter
+}
+
+input ComponentOverviewUpdateManyMutationInput {
+  name: StringFieldUpdateOperationsInput
+  description: NullableStringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input ComponentUpdateWithWhereUniqueWithoutDeviceInput {
+  where: ComponentWhereUniqueInput!
+  data: ComponentUpdateWithoutDeviceInput!
+}
+
+input ComponentUpdateManyWithWhereWithoutDeviceInput {
+  where: ComponentScalarWhereInput!
+  data: ComponentUpdateManyMutationInput!
+}
+
+input ComponentScalarWhereInput {
+  AND: [ComponentScalarWhereInput!]
+  OR: [ComponentScalarWhereInput!]
+  NOT: [ComponentScalarWhereInput!]
+  id: IntFilter
+  deviceId: IntFilter
+  location: JsonFilter
+  export_location: StringFilter
+}
+
+input JsonFilter {
+  equals: JSON
+  not: JSON
+}
+
+input ComponentUpdateManyMutationInput {
+  location: JSON
+  export_location: StringFieldUpdateOperationsInput
+}
+
+input DeviceAuthorUpdateManyWithoutDeviceInput {
+  create: [DeviceAuthorCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceAuthorCreateOrConnectWithoutDeviceInput!]
+  upsert: [DeviceAuthorUpsertWithWhereUniqueWithoutDeviceInput!]
+  createMany: DeviceAuthorCreateManyDeviceInputEnvelope
+  set: [DeviceAuthorWhereUniqueInput!]
+  disconnect: [DeviceAuthorWhereUniqueInput!]
+  delete: [DeviceAuthorWhereUniqueInput!]
+  connect: [DeviceAuthorWhereUniqueInput!]
+  update: [DeviceAuthorUpdateWithWhereUniqueWithoutDeviceInput!]
+  updateMany: [DeviceAuthorUpdateManyWithWhereWithoutDeviceInput!]
+  deleteMany: [DeviceAuthorScalarWhereInput!]
+}
+
+input DeviceAuthorUpsertWithWhereUniqueWithoutDeviceInput {
+  where: DeviceAuthorWhereUniqueInput!
+  update: DeviceAuthorUpdateWithoutDeviceInput!
+  create: DeviceAuthorCreateWithoutDeviceInput!
+}
+
+input DeviceAuthorUpdateWithoutDeviceInput {
+  author: AuthorUpdateOneRequiredWithoutDeviceAuthorInput
+}
+
+input AuthorUpdateOneRequiredWithoutDeviceAuthorInput {
+  create: AuthorCreateWithoutDeviceAuthorInput
+  connectOrCreate: AuthorCreateOrConnectWithoutDeviceAuthorInput
+  upsert: AuthorUpsertWithoutDeviceAuthorInput
+  connect: AuthorWhereUniqueInput
+  update: AuthorUpdateWithoutDeviceAuthorInput
+}
+
+input AuthorUpsertWithoutDeviceAuthorInput {
+  update: AuthorUpdateWithoutDeviceAuthorInput!
+  create: AuthorCreateWithoutDeviceAuthorInput!
+}
+
+input AuthorUpdateWithoutDeviceAuthorInput {
+  name: StringFieldUpdateOperationsInput
+  image: NullableStringFieldUpdateOperationsInput
+  email: NullableStringFieldUpdateOperationsInput
+  authorBio: AuthorBioUpdateManyWithoutAuthorInput
+  authorUrl: AuthorUrlUpdateManyWithoutAuthorInput
+}
+
+input AuthorBioUpdateManyWithoutAuthorInput {
+  create: [AuthorBioCreateWithoutAuthorInput!]
+  connectOrCreate: [AuthorBioCreateOrConnectWithoutAuthorInput!]
+  upsert: [AuthorBioUpsertWithWhereUniqueWithoutAuthorInput!]
+  createMany: AuthorBioCreateManyAuthorInputEnvelope
+  set: [AuthorBioWhereUniqueInput!]
+  disconnect: [AuthorBioWhereUniqueInput!]
+  delete: [AuthorBioWhereUniqueInput!]
+  connect: [AuthorBioWhereUniqueInput!]
+  update: [AuthorBioUpdateWithWhereUniqueWithoutAuthorInput!]
+  updateMany: [AuthorBioUpdateManyWithWhereWithoutAuthorInput!]
+  deleteMany: [AuthorBioScalarWhereInput!]
+}
+
+input AuthorBioUpsertWithWhereUniqueWithoutAuthorInput {
+  where: AuthorBioWhereUniqueInput!
+  update: AuthorBioUpdateWithoutAuthorInput!
+  create: AuthorBioCreateWithoutAuthorInput!
+}
+
+input AuthorBioUpdateWithoutAuthorInput {
+  bio: StringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input AuthorBioUpdateWithWhereUniqueWithoutAuthorInput {
+  where: AuthorBioWhereUniqueInput!
+  data: AuthorBioUpdateWithoutAuthorInput!
+}
+
+input AuthorBioUpdateManyWithWhereWithoutAuthorInput {
+  where: AuthorBioScalarWhereInput!
+  data: AuthorBioUpdateManyMutationInput!
+}
+
+input AuthorBioScalarWhereInput {
+  AND: [AuthorBioScalarWhereInput!]
+  OR: [AuthorBioScalarWhereInput!]
+  NOT: [AuthorBioScalarWhereInput!]
+  id: IntFilter
+  authorId: IntFilter
+  bio: StringFilter
+  locale: StringFilter
+}
+
+input AuthorBioUpdateManyMutationInput {
+  bio: StringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input AuthorUrlUpdateManyWithoutAuthorInput {
+  create: [AuthorUrlCreateWithoutAuthorInput!]
+  connectOrCreate: [AuthorUrlCreateOrConnectWithoutAuthorInput!]
+  upsert: [AuthorUrlUpsertWithWhereUniqueWithoutAuthorInput!]
+  createMany: AuthorUrlCreateManyAuthorInputEnvelope
+  set: [AuthorUrlWhereUniqueInput!]
+  disconnect: [AuthorUrlWhereUniqueInput!]
+  delete: [AuthorUrlWhereUniqueInput!]
+  connect: [AuthorUrlWhereUniqueInput!]
+  update: [AuthorUrlUpdateWithWhereUniqueWithoutAuthorInput!]
+  updateMany: [AuthorUrlUpdateManyWithWhereWithoutAuthorInput!]
+  deleteMany: [AuthorUrlScalarWhereInput!]
+}
+
+input AuthorUrlUpsertWithWhereUniqueWithoutAuthorInput {
+  where: AuthorUrlWhereUniqueInput!
+  update: AuthorUrlUpdateWithoutAuthorInput!
+  create: AuthorUrlCreateWithoutAuthorInput!
+}
+
+input AuthorUrlUpdateWithoutAuthorInput {
+  url: StringFieldUpdateOperationsInput
+}
+
+input AuthorUrlUpdateWithWhereUniqueWithoutAuthorInput {
+  where: AuthorUrlWhereUniqueInput!
+  data: AuthorUrlUpdateWithoutAuthorInput!
+}
+
+input AuthorUrlUpdateManyWithWhereWithoutAuthorInput {
+  where: AuthorUrlScalarWhereInput!
+  data: AuthorUrlUpdateManyMutationInput!
+}
+
+input AuthorUrlScalarWhereInput {
+  AND: [AuthorUrlScalarWhereInput!]
+  OR: [AuthorUrlScalarWhereInput!]
+  NOT: [AuthorUrlScalarWhereInput!]
+  id: IntFilter
+  authorId: IntFilter
+  url: StringFilter
+}
+
+input AuthorUrlUpdateManyMutationInput {
+  url: StringFieldUpdateOperationsInput
+}
+
+input DeviceAuthorUpdateWithWhereUniqueWithoutDeviceInput {
+  where: DeviceAuthorWhereUniqueInput!
+  data: DeviceAuthorUpdateWithoutDeviceInput!
+}
+
+input DeviceAuthorUpdateManyWithWhereWithoutDeviceInput {
+  where: DeviceAuthorScalarWhereInput!
+  data: DeviceAuthorUncheckedUpdateManyWithoutDeviceAuthorsInput!
+}
+
+input DeviceAuthorScalarWhereInput {
+  AND: [DeviceAuthorScalarWhereInput!]
+  OR: [DeviceAuthorScalarWhereInput!]
+  NOT: [DeviceAuthorScalarWhereInput!]
+  deviceId: IntFilter
+  authorId: IntFilter
+}
+
+input DeviceAuthorUncheckedUpdateManyWithoutDeviceAuthorsInput {
+  authorId: IntFieldUpdateOperationsInput
+}
+
+input IntFieldUpdateOperationsInput {
+  set: Int
+  increment: Int
+  decrement: Int
+  multiply: Int
+  divide: Int
+}
+
+input DeviceExtraUpdateManyWithoutDeviceInput {
+  create: [DeviceExtraCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceExtraCreateOrConnectWithoutDeviceInput!]
+  upsert: [DeviceExtraUpsertWithWhereUniqueWithoutDeviceInput!]
+  createMany: DeviceExtraCreateManyDeviceInputEnvelope
+  set: [DeviceExtraWhereUniqueInput!]
+  disconnect: [DeviceExtraWhereUniqueInput!]
+  delete: [DeviceExtraWhereUniqueInput!]
+  connect: [DeviceExtraWhereUniqueInput!]
+  update: [DeviceExtraUpdateWithWhereUniqueWithoutDeviceInput!]
+  updateMany: [DeviceExtraUpdateManyWithWhereWithoutDeviceInput!]
+  deleteMany: [DeviceExtraScalarWhereInput!]
+}
+
+input DeviceExtraUpsertWithWhereUniqueWithoutDeviceInput {
+  where: DeviceExtraWhereUniqueInput!
+  update: DeviceExtraUpdateWithoutDeviceInput!
+  create: DeviceExtraCreateWithoutDeviceInput!
+}
+
+input DeviceExtraUpdateWithoutDeviceInput {
+  name: StringFieldUpdateOperationsInput
+  description: StringFieldUpdateOperationsInput
+  location: JSON
+  export_location: StringFieldUpdateOperationsInput
+  locale: NullableStringFieldUpdateOperationsInput
+}
+
+input DeviceExtraUpdateWithWhereUniqueWithoutDeviceInput {
+  where: DeviceExtraWhereUniqueInput!
+  data: DeviceExtraUpdateWithoutDeviceInput!
+}
+
+input DeviceExtraUpdateManyWithWhereWithoutDeviceInput {
+  where: DeviceExtraScalarWhereInput!
+  data: DeviceExtraUpdateManyMutationInput!
+}
+
+input DeviceExtraScalarWhereInput {
+  AND: [DeviceExtraScalarWhereInput!]
+  OR: [DeviceExtraScalarWhereInput!]
+  NOT: [DeviceExtraScalarWhereInput!]
+  id: IntFilter
+  deviceId: IntFilter
+  name: StringFilter
+  description: StringFilter
+  location: JsonFilter
+  export_location: StringFilter
+  locale: StringNullableFilter
+}
+
+input DeviceExtraUpdateManyMutationInput {
+  name: StringFieldUpdateOperationsInput
+  description: StringFieldUpdateOperationsInput
+  location: JSON
+  export_location: StringFieldUpdateOperationsInput
+  locale: NullableStringFieldUpdateOperationsInput
+}
+
+input DeviceImageUpdateManyWithoutDeviceInput {
+  create: [DeviceImageCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceImageCreateOrConnectWithoutDeviceInput!]
+  upsert: [DeviceImageUpsertWithWhereUniqueWithoutDeviceInput!]
+  createMany: DeviceImageCreateManyDeviceInputEnvelope
+  set: [DeviceImageWhereUniqueInput!]
+  disconnect: [DeviceImageWhereUniqueInput!]
+  delete: [DeviceImageWhereUniqueInput!]
+  connect: [DeviceImageWhereUniqueInput!]
+  update: [DeviceImageUpdateWithWhereUniqueWithoutDeviceInput!]
+  updateMany: [DeviceImageUpdateManyWithWhereWithoutDeviceInput!]
+  deleteMany: [DeviceImageScalarWhereInput!]
+}
+
+input DeviceImageUpsertWithWhereUniqueWithoutDeviceInput {
+  where: DeviceImageWhereUniqueInput!
+  update: DeviceImageUpdateWithoutDeviceInput!
+  create: DeviceImageCreateWithoutDeviceInput!
+}
+
+input DeviceImageUpdateWithoutDeviceInput {
+  image: StringFieldUpdateOperationsInput
+  locale: NullableStringFieldUpdateOperationsInput
+}
+
+input DeviceImageUpdateWithWhereUniqueWithoutDeviceInput {
+  where: DeviceImageWhereUniqueInput!
+  data: DeviceImageUpdateWithoutDeviceInput!
+}
+
+input DeviceImageUpdateManyWithWhereWithoutDeviceInput {
+  where: DeviceImageScalarWhereInput!
+  data: DeviceImageUpdateManyMutationInput!
+}
+
+input DeviceImageScalarWhereInput {
+  AND: [DeviceImageScalarWhereInput!]
+  OR: [DeviceImageScalarWhereInput!]
+  NOT: [DeviceImageScalarWhereInput!]
+  id: IntFilter
+  deviceId: IntFilter
+  image: StringFilter
+  locale: StringNullableFilter
+}
+
+input DeviceImageUpdateManyMutationInput {
+  image: StringFieldUpdateOperationsInput
+  locale: NullableStringFieldUpdateOperationsInput
+}
+
+input DeviceOverviewUpdateManyWithoutDeviceInput {
+  create: [DeviceOverviewCreateWithoutDeviceInput!]
+  connectOrCreate: [DeviceOverviewCreateOrConnectWithoutDeviceInput!]
+  upsert: [DeviceOverviewUpsertWithWhereUniqueWithoutDeviceInput!]
+  createMany: DeviceOverviewCreateManyDeviceInputEnvelope
+  set: [DeviceOverviewWhereUniqueInput!]
+  disconnect: [DeviceOverviewWhereUniqueInput!]
+  delete: [DeviceOverviewWhereUniqueInput!]
+  connect: [DeviceOverviewWhereUniqueInput!]
+  update: [DeviceOverviewUpdateWithWhereUniqueWithoutDeviceInput!]
+  updateMany: [DeviceOverviewUpdateManyWithWhereWithoutDeviceInput!]
+  deleteMany: [DeviceOverviewScalarWhereInput!]
+}
+
+input DeviceOverviewUpsertWithWhereUniqueWithoutDeviceInput {
+  where: DeviceOverviewWhereUniqueInput!
+  update: DeviceOverviewUpdateWithoutDeviceInput!
+  create: DeviceOverviewCreateWithoutDeviceInput!
+}
+
+input DeviceOverviewUpdateWithoutDeviceInput {
+  name: StringFieldUpdateOperationsInput
+  description: StringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input DeviceOverviewUpdateWithWhereUniqueWithoutDeviceInput {
+  where: DeviceOverviewWhereUniqueInput!
+  data: DeviceOverviewUpdateWithoutDeviceInput!
+}
+
+input DeviceOverviewUpdateManyWithWhereWithoutDeviceInput {
+  where: DeviceOverviewScalarWhereInput!
+  data: DeviceOverviewUpdateManyMutationInput!
+}
+
+input DeviceOverviewScalarWhereInput {
+  AND: [DeviceOverviewScalarWhereInput!]
+  OR: [DeviceOverviewScalarWhereInput!]
+  NOT: [DeviceOverviewScalarWhereInput!]
+  id: IntFilter
+  deviceId: IntFilter
+  name: StringFilter
+  description: StringFilter
+  locale: StringFilter
+}
+
+input DeviceOverviewUpdateManyMutationInput {
+  name: StringFieldUpdateOperationsInput
+  description: StringFieldUpdateOperationsInput
+  locale: StringFieldUpdateOperationsInput
+}
+
+input DeviceWhereUniqueInput {
+  id: Int
+}

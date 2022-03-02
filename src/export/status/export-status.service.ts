@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExportId } from 'src/bom-types-and-schemas';
+import { ExportId } from '../../bom-types-and-schemas';
 import {
   CompletedExportStatus,
   ExportedExportStatus,

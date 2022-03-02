@@ -1,0 +1,251 @@
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["linux-musl", "native"]
+  previewFeatures = ["referentialIntegrity"]
+}
+
+generator nestgraphql {
+  provider = "node node_modules/prisma-nestjs-graphql"
+  output   = "../src/@generated/prisma-nestjs-graphql"
+}
+
+datasource db {
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model AuthorBio {
+  id       Int @id @default(autoincrement())
+  authorId Int
+
+  bio    String @db.VarChar(1000)
+  locale String @db.VarChar(45)
+
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@index([authorId], map: "author_bio_idx")
+  @@map("author_bios")
+}
+
+model AuthorUrl {
+  id       Int @id @default(autoincrement())
+  authorId Int
+
+  url String @db.VarChar(45)
+
+  author Author @relation(fields: [authorId], references: [id])
+
+  @@index([authorId], map: "author_idx")
+  @@map("author_urls")
+}
+
+model Author {
+  id Int @id @default(autoincrement())
+
+  name  String  @db.VarChar(100)
+  image String? @db.VarChar(2083)
+  email String? @db.VarChar(100)
+
+  authorBio    AuthorBio[]
+  authorUrl    AuthorUrl[]
+  deviceAuthor DeviceAuthor[]
+
+  @@map("authors")
+}
+
+model ComponentOverview {
+  id          Int @id @default(autoincrement())
+  componentId Int
+
+  name        String  @db.VarChar(1000)
+  description String? @db.VarChar(10000)
+  locale      String  @db.TinyText
+
+  component Component @relation("ComponentOverview_Component", fields: [componentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([componentId], map: "component_idx")
+  @@map("component_overviews")
+}
+
+model ComponentParameterConfigurationDescriptionPairing {
+  id                         Int @id @default(autoincrement())
+  componentParameterId       Int @unique()
+  configurationDescriptionId Int
+
+  componentParameter       ComponentParameter       @relation("ComponentParameterConfigurationDescriptionPairing_ComponentParameter", fields: [componentParameterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  configurationDescription ConfigurationDescription @relation("ComponentParameterConfigurationDescriptionPairing_ConfigurationDescription", fields: [configurationDescriptionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("component_parameter_configuration_description_pairings")
+}
+
+enum ComponentParameterKind {
+  NUMERIC
+  BOOLEAN
+}
+
+// Intentionally not internationalized! Parameters are only going to be accessible to admins/device creators, no need
+// to internationalize parameter name/descriptions
+model ComponentParameter {
+  id          Int @id @default(autoincrement())
+  componentId Int
+
+  kind        ComponentParameterKind // Whether the parameter is a number, a boolean, etc.
+  cadName     String                 @db.VarChar(1000) // The name of the parameter in the CAD software
+  humanName   String?                @db.VarChar(1000) // The human-readable name of the parameter
+  description String?                @db.VarChar(1000) // The human-readable description of the parameter
+
+  component Component                                          @relation("ComponentParameter_Component", fields: [componentId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  pairing   ComponentParameterConfigurationDescriptionPairing? @relation("ComponentParameterConfigurationDescriptionPairing_ComponentParameter")
+
+  @@map("component_parameters")
+}
+
+model Component {
+  id       Int @id @default(autoincrement())
+  deviceId Int
+
+  count          Int?
+  location       Json
+  exportLocation String @db.VarChar(1000)
+
+  device             Device               @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  componentOverviews ComponentOverview[]  @relation("ComponentOverview_Component")
+  parameters         ComponentParameter[] @relation("ComponentParameter_Component")
+
+  @@index([deviceId], map: "device_idx")
+  @@map("components")
+}
+
+model DeviceAuthor {
+  deviceId Int
+  authorId Int
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([deviceId, authorId])
+  @@index([authorId], map: "device_author_author_idx")
+  @@index([deviceId], map: "device_author_device_idx")
+  @@map("device_authors")
+}
+
+model DeviceExtra {
+  id       Int @id @default(autoincrement())
+  deviceId Int
+
+  name           String  @db.VarChar(1000)
+  description    String  @db.VarChar(10000)
+  location       Json
+  exportLocation String  @db.VarChar(1000)
+  locale         String? @db.TinyText
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([deviceId], map: "device_extra_idx")
+  @@map("device_extras")
+}
+
+model DeviceImage {
+  id       Int @id @default(autoincrement())
+  deviceId Int
+
+  image  String  @db.VarChar(2083)
+  locale String? @db.TinyText
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([deviceId], map: "device_image_idx")
+  @@map("device_images")
+}
+
+model DeviceOverview {
+  id       Int @id @default(autoincrement())
+  deviceId Int
+
+  name        String @db.VarChar(1000)
+  description String @db.VarChar(10000)
+  locale      String @db.TinyText
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([deviceId], map: "device_overview_idx")
+  @@map("device_overviews")
+}
+
+model Device {
+  id                          Int  @id @default(autoincrement())
+  measurementSetDescriptionId Int?
+  optionSetDescriptionId      Int?
+
+  createdAt  DateTime   @default(now())
+      updatedAt DateTime
+
+  components                Component[]
+  deviceAuthors             DeviceAuthor[]
+  deviceExtras              DeviceExtra[]
+  deviceImages              DeviceImage[]
+  deviceOverviews           DeviceOverview[]
+  measurementSetDescription ConfigurationSetDescription? @relation("Device_ConfigurationSetDescription_Measurement", fields: [measurementSetDescriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  optionSetDescription      ConfigurationSetDescription? @relation("Device_ConfigurationSetDescription_Option", fields: [optionSetDescriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("devices")
+}
+
+// ConfigurationSet is the parent type of {Measurement,Option}Set
+// Similarly, Configuration{Description,SetDescription} are the parent types for {Measurement,Option}x{Description,SetDescription}
+
+model ConfigurationSetDescription {
+  id Int @id @default(autoincrement())
+
+  overviews          ConfigurationSetDescriptionOverview[] @relation("ConfigurationSetDescriptionOverview_ConfigurationSetDescription")
+  configurations     ConfigurationDescription[]            @relation("ConfigurationDescription_ConfigurationSetDescription")
+  deviceMeasurements Device[]                              @relation("Device_ConfigurationSetDescription_Measurement")
+  deviceOptions      Device[]                              @relation("Device_ConfigurationSetDescription_Option")
+
+  @@map("configuration_set_descriptions")
+}
+
+model ConfigurationSetDescriptionOverview {
+  id                            Int @id @default(autoincrement())
+  configurationSetDescriptionId Int
+
+  name        String @db.VarChar(1000)
+  description String @db.VarChar(10000)
+  locale      String @db.TinyText
+
+  configurationSetDescription ConfigurationSetDescription @relation("ConfigurationSetDescriptionOverview_ConfigurationSetDescription", fields: [configurationSetDescriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("configuraiton_set_description_overviews")
+}
+
+enum ConfigurationDescriptionKind {
+  NUMERIC
+  BOOLEAN
+}
+
+model ConfigurationDescription {
+  id                            Int @id @default(autoincrement())
+  configurationSetDescriptionId Int
+
+  kind ConfigurationDescriptionKind
+
+  configurationSetDescription ConfigurationSetDescription                         @relation("ConfigurationDescription_ConfigurationSetDescription", fields: [configurationSetDescriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  overviews                   ConfigurationDescriptionOverview[]                  @relation("ConfigurationDescriptionOverview_ConfigurationDescription")
+  pairings                    ComponentParameterConfigurationDescriptionPairing[] @relation("ComponentParameterConfigurationDescriptionPairing_ConfigurationDescription")
+
+  @@map("configuraiton_descriptions")
+}
+
+model ConfigurationDescriptionOverview {
+  id                         Int @id @default(autoincrement())
+  configurationDescriptionId Int
+
+  name        String @db.VarChar(1000)
+  description String @db.VarChar(10000)
+  locale      String @db.TinyText
+
+  configurationDescription ConfigurationDescription @relation("ConfigurationDescriptionOverview_ConfigurationDescription", fields: [configurationDescriptionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("configuraiton_description_overviews")
+}

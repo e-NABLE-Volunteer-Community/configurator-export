@@ -3,10 +3,11 @@ import { StlFile } from './base-bom-exporter';
 import { ExporterFactoryRegistry } from './exporter-factory-registry';
 import { BillOfMaterials, ExportId } from '../bom-types-and-schemas';
 import { WinstonLokiLoggerService } from '../logger/winston-loki-logger.service';
-import { eNableConfiguratorError } from '@configurator/e-nable.configurator.common.errors';
 import { InternalServerError } from '../errors';
-import { ExportOutputService } from './output/export-output.service';
+import { ExportPackagingService } from './output/export-packaging.service';
 import { ExportStatusService } from './status/export-status.service';
+import { eNableConfiguratorError } from '../error';
+import { AccessAndRefreshToken } from './onshape/base-onshape-api';
 
 @Injectable()
 export class ExportService {
@@ -14,7 +15,7 @@ export class ExportService {
     private readonly logger: WinstonLokiLoggerService,
     private readonly exporterFactoryRegistry: ExporterFactoryRegistry,
     private readonly exportStatusService: ExportStatusService,
-    private readonly exportOutputService: ExportOutputService,
+    private readonly exportOutputService: ExportPackagingService,
   ) {}
 
   async exportBom(
@@ -24,9 +25,11 @@ export class ExportService {
     this.logger.log('Exporting...', { id, location: billOfMaterials.location });
 
     try {
+      const auth = billOfMaterials.authorization;
       const exporter = this.exporterFactoryRegistry.exporterForBom(
         id,
         billOfMaterials,
+        auth,
       );
       const stls: StlFile[] = await exporter.exportBom();
       this.logger.log('Finished exporting.');

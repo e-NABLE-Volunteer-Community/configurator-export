@@ -70,9 +70,9 @@ export default {
   // maxWorkers: "50%",
 
   // An array of directory names to be searched recursively up from the requiring module's location
-  // moduleDirectories: [
-  //   "node_modules"
-  // ],
+  moduleDirectories: [
+    "node_modules", 'src'
+  ],
 
   // An array of file extensions your modules use
   // moduleFileExtensions: [
@@ -85,7 +85,7 @@ export default {
   // ],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: {},
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   modulePathIgnorePatterns: ['<rootDir>/cypress/', '<rootDir>/.yalc'],
@@ -118,12 +118,12 @@ export default {
   // restoreMocks: false,
 
   // The root directory that Jest should scan for tests and modules within
-  // rootDir: undefined,
+  rootDir: './',
 
   // A list of paths to directories that Jest should use to search for files in
-  // roots: [
-  //   "<rootDir>"
-  // ],
+  roots: [
+    "<rootDir>"
+  ],
 
   // Allows you to use a custom runner instead of Jest's default test runner
   // runner: "jest-runner",
@@ -150,7 +150,7 @@ export default {
   // testLocationInResults: false,
 
   // The glob patterns Jest uses to detect test files
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['**/*.test.ts', '**/*.spec.ts', "**/*.e2e-spec.ts"],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
   // testPathIgnorePatterns: [
@@ -197,9 +197,9 @@ export default {
   // watchman: true,
 
   moduleFileExtensions: ['ts', 'tsx', 'js'],
-  moduleNameMapper: {
-    '^(.*)\\.js$': '$1',
-  },
+  // moduleNameMapper: {
+  //   '^(.*)\\.js$': '$1',
+  // },
   transformIgnorePatterns: [
     'node_modules/(?!aggregate-error|clean-stack|escape-string-regexp|indent-string|p-map)',
   ],

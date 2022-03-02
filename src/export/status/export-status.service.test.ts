@@ -11,7 +11,7 @@ const sleepMs = (ms: number) =>
 describe('ExportStatusService', () => {
   let exportStatusService: ExportStatusService;
   let exportId: string;
-  const watch = jest.fn(console.log);
+  const watch = jest.fn();
   const partNames = ['part1', 'part2', 'part3'];
 
   const init = async () => {
