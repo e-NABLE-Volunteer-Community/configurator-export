@@ -9,14 +9,14 @@ import {
 } from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-  const https = {
-    key: fs.readFileSync('./secrets/enable-exporter.key.pem'),
-    cert: fs.readFileSync('./secrets/enable-exporter.crt.pem'),
-  };
+  // const https = {
+  //   key: fs.readFileSync('./secrets/enable-exporter.key.pem'),
+  //   cert: fs.readFileSync('./secrets/enable-exporter.crt.pem'),
+  // };
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter({
-      https,
+      // https,
     }),
   );
   app.enableCors();
