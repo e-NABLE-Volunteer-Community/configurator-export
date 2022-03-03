@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 import path from 'path';
+import { ConfigService } from '@nestjs/config';
 
 // const autoSchemaFile = path.join(process.cwd(), 'src/schema.gql');
 
@@ -26,8 +27,10 @@ import path from 'path';
 
     // Client
     OnshapeAuthModule,
-    ServeStaticModule.forRoot({
-      rootPath: '/root/api/client',
+    ServeStaticModule.forRootAsync({
+      useFactory: (config: ConfigService) => [
+        { rootPath: config.get('WEB_ROOT')! },
+      ],
     }),
 
     // Export API

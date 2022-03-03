@@ -15,8 +15,8 @@ export enum ErrorTypes {
   ServiceUnavailable,
 }
 
-export const errorCode: unique symbol = Symbol("errorCode");
-export const errorType: unique symbol = Symbol("errorType");
+export const errorCode: unique symbol = Symbol('errorCode');
+export const errorType: unique symbol = Symbol('errorType');
 export interface CodedError<C extends ErrorCodes> {
   [errorType]: ErrorTypes;
   [errorCode]: C;
@@ -33,10 +33,9 @@ export abstract class eNableConfiguratorError<C extends ErrorCodes>
     readonly message: string,
     readonly extras?: {
       status?: number;
-    }
+    },
   ) {
     super(message);
     this.name = this.constructor.name;
   }
 }
-//noop
