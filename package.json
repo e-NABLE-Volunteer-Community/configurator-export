@@ -12,7 +12,7 @@
     "start": "yarn cross-env NODE_ENV=development nest start",
     "start:dev": "yarn cross-env NODE_ENV=development nest start --watch",
     "start:debug": "npx prisma db push && yarn cross-env NODE_ENV=development nest start --debug 0.0.0.0:9229 --watch",
-    "start:prod": "yarn cross-env NODE_ENV=production node dist/main",
+    "start:prod": "yarn cross-env NODE_ENV=production node dist/src/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
