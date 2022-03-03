@@ -27,7 +27,7 @@ import path from 'path';
     // Client
     OnshapeAuthModule,
     ServeStaticModule.forRoot({
-      rootPath: '/Users/andrew/WebstormProjects/enable-test/api/client',
+      rootPath: '/root/api/client',
     }),
 
     // Export API
