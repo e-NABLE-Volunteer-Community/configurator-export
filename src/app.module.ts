@@ -27,6 +27,7 @@ import { ConfigService } from '@nestjs/config';
     // Client
     OnshapeAuthModule,
     ServeStaticModule.forRootAsync({
+      inject: [ConfigService],
       useFactory: (config: ConfigService) => [
         {
           rootPath: config.get('WEB_ROOT')!,
