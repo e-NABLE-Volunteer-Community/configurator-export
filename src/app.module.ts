@@ -7,7 +7,6 @@ import { OnshapeAuthModule } from './onshape-auth/onshape-auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
-import path from 'path';
 import { ConfigService } from '@nestjs/config';
 
 // const autoSchemaFile = path.join(process.cwd(), 'src/schema.gql');
@@ -29,7 +28,10 @@ import { ConfigService } from '@nestjs/config';
     OnshapeAuthModule,
     ServeStaticModule.forRootAsync({
       useFactory: (config: ConfigService) => [
-        { rootPath: config.get('WEB_ROOT')! },
+        {
+          rootPath: config.get('WEB_ROOT')!,
+          renderPath: '/web',
+        },
       ],
     }),
 
