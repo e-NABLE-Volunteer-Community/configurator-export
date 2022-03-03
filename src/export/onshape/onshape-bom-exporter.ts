@@ -118,6 +118,7 @@ export class OnshapeBomExporter extends BaseBomExporter<
 
   private async getPartsOrThrow(): Promise<Part[]> {
     const parts = await this.partsForWorkspacePromise;
+    console.log(parts);
     if ('status' in parts) {
       if (parts.status === 404)
         throw new OnshapeDeviceNotFoundError(
