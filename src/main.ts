@@ -9,19 +9,24 @@ import {
 } from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-  // const https = {
-  //   key: fs.readFileSync('./secrets/enable-exporter.key.pem'),
-  //   cert: fs.readFileSync('./secrets/enable-exporter.crt.pem'),
-  // };
+  const fastifyOptions =
+    process.env.NODE_ENV === 'development'
+      ? {
+          https: {
+            key: fs.readFileSync('./secrets/enable-exporter.key.pem'),
+            cert: fs.readFileSync('./secrets/enable-exporter.crt.pem'),
+          },
+        }
+      : undefined;
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({
-      // https,
-    }),
+    new FastifyAdapter(fastifyOptions),
   );
   app.enableCors();
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
   const port = configService.get('EXPORTER_PORT');
   await app.listen(port).then(() => console.info(`Listening on port ${port}`));
 }
+
 bootstrap();

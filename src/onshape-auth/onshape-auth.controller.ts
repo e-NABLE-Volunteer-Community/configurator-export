@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { AuthResponse } from '../oauth.service';
 import { OnshapeAuthService } from './onshape-auth.service';
 
-@Controller('onshape')
+@Controller('api/auth/onshape')
 export class OnshapeAuthController {
   constructor(private readonly authService: OnshapeAuthService) {}
 
