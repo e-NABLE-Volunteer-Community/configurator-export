@@ -1,5 +1,6 @@
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { DynamicModule } from '@nestjs/common';
 
 export const authProviders = [
   // { provide: APP_GUARD, useClass: JwtAuthGuard },

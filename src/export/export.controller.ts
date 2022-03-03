@@ -12,7 +12,7 @@ import { BillOfMaterials, ExportId } from '../bom-types-and-schemas';
 import * as uuid from 'uuid';
 import { ExportPackagingService } from './output/export-packaging.service';
 
-@Controller('api/export')
+@Controller('export')
 export class ExportController {
   constructor(
     private readonly exportService: ExportService,

@@ -31,7 +31,7 @@ import { ConfigService } from '@nestjs/config';
       useFactory: (config: ConfigService) => [
         {
           rootPath: config.get('WEB_ROOT')!,
-          renderPath: '/web',
+          exclude: ['/api*'],
         },
       ],
     }),

@@ -26,10 +26,13 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(fastifyOptions),
   );
+  app.setGlobalPrefix('api');
   app.enableCors();
   const configService: ConfigService = app.get<ConfigService>(ConfigService);
   const port = configService.get('EXPORTER_PORT');
-  await app.listen(port, '0.0.0.0').then(() => console.info(`Listening on port ${port}`));
+  await app
+    .listen(port, '0.0.0.0')
+    .then(() => console.info(`Listening on port ${port}`));
 }
 
 bootstrap();
