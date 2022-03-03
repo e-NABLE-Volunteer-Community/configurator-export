@@ -5,6 +5,9 @@ import { ExportStatusModule } from './export/status/export-status.module';
 import { authImports, authProviders } from './auth-providers';
 import { OnshapeAuthModule } from './onshape-auth/onshape-auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TerminusModule } from '@nestjs/terminus';
+import { HealthController } from './health/health.controller';
+import path from 'path';
 
 // const autoSchemaFile = path.join(process.cwd(), 'src/schema.gql');
 
@@ -12,8 +15,9 @@ import { ServeStaticModule } from '@nestjs/serve-static';
   imports: [
     ...authImports,
 
-    // Logging/tracing
+    // Logging/tracing/monitoring
     WinstonLokiLoggerModule,
+    TerminusModule,
 
     // Devices GraphQL API
     // PrismaModule,
@@ -23,7 +27,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     // Client
     OnshapeAuthModule,
     ServeStaticModule.forRoot({
-      // serveRoot: 'web',
       rootPath: '/Users/andrew/WebstormProjects/enable-test/api/client',
     }),
 
@@ -33,7 +36,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 
     // ForgeAuthModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [...authProviders],
 })
 export class AppModule {}

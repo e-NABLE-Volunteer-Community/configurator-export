@@ -16,8 +16,11 @@ async function bootstrap() {
             key: fs.readFileSync('./secrets/enable-exporter.key.pem'),
             cert: fs.readFileSync('./secrets/enable-exporter.crt.pem'),
           },
+          logger: true,
         }
-      : undefined;
+      : {
+          logger: true,
+        };
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
