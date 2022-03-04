@@ -8,6 +8,6 @@ import { ExportPackagingService } from './output/export-packaging.service';
 @Module({
   imports: [WinstonLokiLoggerModule, ExportStatusModule],
   controllers: [ExportController],
-  providers: [ExportPackagingService, ExportService],
+  providers: [ExportService],
 })
 export class ExportModule {}

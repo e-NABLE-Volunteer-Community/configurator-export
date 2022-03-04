@@ -6,8 +6,6 @@ import { ConfigService } from '@nestjs/config';
 import { InternalServerError } from '../../errors';
 import * as path from 'path';
 import archiver from 'archiver';
-import * as streams from 'stream';
-import * as util from 'util';
 import { StlFile } from '../export.service';
 
 export type OutputFile = { dir?: string; name: string; data: Buffer };

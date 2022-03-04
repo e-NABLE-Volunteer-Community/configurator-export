@@ -23,10 +23,7 @@ import { REQUEST } from '@nestjs/core';
 
 @Controller('export')
 export class ExportController {
-  constructor(
-    private readonly exportService: ExportService,
-    private readonly exportOutputService: ExportPackagingService,
-  ) {}
+  constructor(private readonly exportService: ExportService) {}
 
   private static readonly validateBom = new Ajv().compile(
     BillOfMaterialsSchema,
@@ -38,21 +35,5 @@ export class ExportController {
     if (!ExportController.validateBom(bom))
       throw new BadRequestException('Bill of materials was malformed');
     return this.exportService.initiateExport();
-  }
-
-  @Get(':id')
-  // @UseGuards(JwtAuthGuard)
-  retrieveOutput(
-    @Param('id') exportId: ExportId,
-    @Response({ passthrough: true }) res,
-  ): StreamableFile {
-    if (!exportId) throw new Error('No Export ID');
-    const file = this.exportOutputService.getExportOutputFile(exportId);
-    res.header('Content-Type', 'application/zip');
-    res.header(
-      'Content-disposition',
-      `attachment; filename=${exportId + '.zip'}`,
-    );
-    return new StreamableFile(file);
   }
 }

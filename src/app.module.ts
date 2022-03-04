@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 import { ConfigService } from '@nestjs/config';
+import { ExportOutputController } from './export-output/export-output.controller';
 
 // const autoSchemaFile = path.join(process.cwd(), 'src/schema.gql');
 
@@ -40,7 +41,7 @@ import { ConfigService } from '@nestjs/config';
     ExportStatusModule,
     ExportModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ExportOutputController],
   providers: [...authProviders],
 })
 export class AppModule {}
