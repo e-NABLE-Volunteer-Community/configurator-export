@@ -9,6 +9,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from './health/health.controller';
 import { ConfigService } from '@nestjs/config';
 import { ExportOutputController } from './export-output/export-output.controller';
+import { ExportOutputModule } from './export-output/export-output.module';
 
 // const autoSchemaFile = path.join(process.cwd(), 'src/schema.gql');
 
@@ -40,6 +41,7 @@ import { ExportOutputController } from './export-output/export-output.controller
     // Export API
     ExportStatusModule,
     ExportModule,
+    ExportOutputModule,
   ],
   controllers: [HealthController, ExportOutputController],
   providers: [...authProviders],
