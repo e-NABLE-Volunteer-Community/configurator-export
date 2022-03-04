@@ -39,11 +39,11 @@ import { ExportOutputModule } from './export-output/export-output.module';
     }),
 
     // Export API
+    ExportOutputModule,
     ExportStatusModule,
     ExportModule,
-    ExportOutputModule,
   ],
-  controllers: [HealthController, ExportOutputController],
+  controllers: [HealthController],
   providers: [...authProviders],
 })
 export class AppModule {}
