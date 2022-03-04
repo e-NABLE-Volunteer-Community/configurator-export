@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { BillOfMaterials, ExportId } from '../../bom-types-and-schemas';
 import * as fsp from 'fs/promises';
 import * as fs from 'fs';
-import { StlFile } from '../base-bom-exporter';
 import { ConfigService } from '@nestjs/config';
 import { InternalServerError } from '../../errors';
 import * as path from 'path';
 import archiver from 'archiver';
 import * as streams from 'stream';
 import * as util from 'util';
+import { StlFile } from '../export.service';
 
 export type OutputFile = { dir?: string; name: string; data: Buffer };
 

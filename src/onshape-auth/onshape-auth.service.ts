@@ -8,13 +8,20 @@ const onshapeGetTokenUrl = 'https://oauth.onshape.com/oauth/token';
 @Injectable()
 export class OnshapeAuthService extends OauthService {
   constructor(httpService: HttpService, configService: ConfigService) {
-    // TODO: Refactor when TypeScript 4.6 comes out
-    super(httpService, {
-      tokenUrl: onshapeGetTokenUrl,
-      refreshUrl: onshapeGetTokenUrl,
-      redirectUrl: configService.get('ONSHAPE_REDIRECT_URL')!,
-      clientId: configService.get('ONSHAPE_CLIENT_ID')!,
-      clientSecret: configService.get('ONSHAPE_CLIENT_SECRET')!,
-    });
+    const tokenUrl = onshapeGetTokenUrl;
+    const refreshUrl = onshapeGetTokenUrl;
+    const redirectUrl = configService.get('ONSHAPE_REDIRECT_URL')!;
+    const clientId = configService.get('ONSHAPE_CLIENT_ID')!;
+    const clientSecret = configService.get('ONSHAPE_CLIENT_SECRET')!;
+
+    const config = {
+      tokenUrl,
+      refreshUrl,
+      redirectUrl,
+      clientId,
+      clientSecret,
+    };
+
+    super(httpService, config);
   }
 }

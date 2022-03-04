@@ -6,7 +6,7 @@ import * as uuid from 'uuid';
 import { Fusion360Bom } from './fusion-360/fusion360-bom-exporter';
 import { BomLocationType } from './exporter-factory-registry';
 import { BaseBomExporter } from './base-bom-exporter';
-import { PartName } from './onshape/onshape-types';
+import { PartName } from './onshape-api/onshape-types';
 import { BomInstance } from '../bom-types-and-schemas';
 import * as R from 'ramda';
 
@@ -54,40 +54,6 @@ const validBom: Fusion360Bom = {
   },
 };
 //</editor-fold>
-
-class TestBomExporter extends BaseBomExporter<
-  Fusion360Bom,
-  BomLocationType.Fusion360
-> {
-  readonly locationType = BomLocationType.Fusion360;
-
-  constructor(
-    protected readonly exportId: string,
-    protected readonly billOfMaterials: Fusion360Bom,
-    protected readonly exportStatusService: ExportStatusService,
-  ) {
-    super(exportId, billOfMaterials, exportStatusService);
-  }
-
-  protected stlDataForConfiguredLineInstance(
-    partName: PartName,
-    instance: BomInstance,
-  ): Promise<Buffer> {
-    this.exportStatusService.partExporting(this.exportId, instance.name);
-    return Promise.resolve(new Buffer('data'));
-  }
-
-  protected stlDataForDefaultLine(partName: PartName): Promise<Buffer> {
-    this.exportStatusService.partExporting(this.exportId, partName);
-    return Promise.resolve(new Buffer('data'));
-  }
-
-  protected verifyBomLocationStructureIsValid(): void {}
-
-  protected verifyDeviceAndAllPartsAreAvailable(): Promise<void> {
-    return Promise.resolve();
-  }
-}
 
 describe('BaseBomExporter', () => {
   let exportStatusService: ExportStatusService;

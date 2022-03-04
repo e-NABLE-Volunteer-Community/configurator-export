@@ -8,7 +8,7 @@ import { authImports, authProviders } from '../auth-providers';
 import { ExportController } from './export.controller';
 import { createMock } from '@golevelup/ts-jest';
 import { getAuthHeaders, Requester } from '../../test/test-authentication';
-import phoenixV3OnshapeBom from './onshape/test-data/onshape-boms/phoenix-v3-test-bom.json';
+import phoenixV3OnshapeBom from './onshape-api/test-data/onshape-boms/phoenix-v3-test-bom.json';
 import SpyInstance = jest.SpyInstance;
 
 describe('ExportController', () => {
@@ -29,7 +29,7 @@ describe('ExportController', () => {
       exportService = module.get<ExportService>(ExportService);
 
       exportSpy = jest
-        .spyOn(exportService, 'exportBom')
+        .spyOn(exportService, 'initiateExport')
         .mockImplementation(async () => {});
 
       app = module.createNestApplication<NestFastifyApplication>(

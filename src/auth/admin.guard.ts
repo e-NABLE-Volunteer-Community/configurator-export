@@ -15,14 +15,12 @@ export class AdminGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    console.debug('AdminGuard.canActivate', { isPublic });
     if (isPublic) {
       return true;
     }
 
     const req = context.switchToHttp().getRequest();
     const user = req.user;
-    console.debug('AdminGuard.canActivate', { user });
     return user?.isAdmin;
   }
 }

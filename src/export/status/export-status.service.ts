@@ -10,7 +10,7 @@ import {
   QueuedExportStatus,
   ZippingExportStatus,
 } from './export-status-types';
-import { PartName } from '../onshape/onshape-types';
+import { PartName } from '../onshape-api/onshape-types';
 import * as R from 'ramda';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { InternalServerError } from '../../errors';

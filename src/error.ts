@@ -22,7 +22,7 @@ export interface CodedError<C extends ErrorCodes> {
   [errorCode]: C;
 }
 
-export abstract class eNableConfiguratorError<C extends ErrorCodes>
+export abstract class LocalizedError<C extends ErrorCodes>
   extends Error
   implements CodedError<C>
 {

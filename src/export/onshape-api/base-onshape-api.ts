@@ -1,48 +1,9 @@
 import querystring from 'querystring';
 import { createHmac } from 'crypto';
-import axios, { Method } from 'axios';
-import { InternalServerError } from '../../errors';
-import { ConfigService } from '@nestjs/config';
+import defaultAxios, { Axios, Method } from 'axios';
 
-const chars = [
-  'A',
-  'B',
-  'C',
-  'D',
-  'E',
-  'F',
-  'G',
-  'H',
-  'I',
-  'J',
-  'K',
-  'L',
-  'M',
-  'N',
-  'O',
-  'P',
-  'Q',
-  'R',
-  'S',
-  'T',
-  'U',
-  'V',
-  'W',
-  'X',
-  'Y',
-  'Z',
-  '0',
-  '1',
-  '2',
-  '3',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9',
-];
-
+// prettier-ignore
+const chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const sampleArray = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
 
 export type AccessAndRefreshToken = {
@@ -63,22 +24,13 @@ const isAccessAndRefreshToken = (unk: unknown): unk is AccessAndRefreshToken =>
 
 export abstract class BaseOnshapeApi {
   private readonly baseUrl: string = 'https://cad.onshape.com';
-  private readonly axios = axios;
+  private readonly axios;
 
-  private readonly publicKey: string;
-  private readonly privateKey: string;
-
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly auth?: AccessAndRefreshToken,
+  protected constructor(
+    private readonly auth: AccessAndRefreshToken | PublicAndPrivateKeys,
+    axios?: Axios,
   ) {
-    const publicKey = configService.get<string>('ONSHAPE_PUBLIC_API_KEY');
-    if (!publicKey) throw new InternalServerError('Could not get publicKey');
-    const privateKey = configService.get<string>('ONSHAPE_PRIVATE_API_KEY');
-    if (!privateKey) throw new InternalServerError('Could not get privateKey');
-
-    this.publicKey = publicKey;
-    this.privateKey = privateKey;
+    this.axios = axios ?? defaultAxios;
   }
 
   private buildQueryString(query?: Record<string, string>) {
@@ -96,18 +48,15 @@ export abstract class BaseOnshapeApi {
     return querystring.stringify(query);
   }
 
-  private buildHeaders(
-    auth: AccessAndRefreshToken | PublicAndPrivateKeys,
-    args: {
-      extraHeaders?: Record<string, string>;
-      acceptJson?: true;
-      method: string;
-      nonce: string;
-      date: Date;
-      path: string;
-      query?: Record<string, string>;
-    },
-  ) {
+  private buildHeaders(args: {
+    extraHeaders?: Record<string, string>;
+    acceptJson?: true;
+    method: string;
+    nonce: string;
+    date: Date;
+    path: string;
+    query?: Record<string, string>;
+  }) {
     const {
       extraHeaders = {},
       method,
@@ -124,12 +73,11 @@ export abstract class BaseOnshapeApi {
       'Content-Type': 'application/json',
       ...extraHeaders,
       Date: date.toUTCString(),
-      'On-Nonce': nonce,
     };
 
-    if (isAccessAndRefreshToken(auth)) {
-      headers['Authorization'] = `Bearer ${auth.accessToken}`;
-      console.log(headers);
+    if (isAccessAndRefreshToken(this.auth)) {
+      headers['Authorization'] = `Bearer ${this.auth.accessToken}`;
+      console.log({ headers });
       return headers;
     }
 
@@ -145,11 +93,14 @@ export abstract class BaseOnshapeApi {
     ]
       .join('\n')
       .toLowerCase();
-    const signature = createHmac('sha256', auth.privateKey)
+    const signature = createHmac('sha256', this.auth.privateKey)
       .update(hmacString)
       .digest('base64');
-    headers['Authorization'] = `On ${auth.publicKey}:HmacSHA256:${signature}`;
-
+    headers['On-Nonce'] = nonce;
+    headers[
+      'Authorization'
+    ] = `On ${this.auth.publicKey}:HmacSHA256:${signature}`;
+    console.log({ headers });
     return headers;
   }
 
@@ -281,18 +232,15 @@ export abstract class BaseOnshapeApi {
     return this.axios.request({
       url: this.baseUrl + path,
       method,
-      headers: this.buildHeaders(
-        this.auth ?? { publicKey: this.publicKey, privateKey: this.privateKey },
-        {
-          acceptJson,
-          extraHeaders,
-          method,
-          nonce: this.createNonce(),
-          date: new Date(),
-          path,
-          query,
-        },
-      ),
+      headers: this.buildHeaders({
+        acceptJson,
+        extraHeaders,
+        method,
+        nonce: this.createNonce(),
+        date: new Date(),
+        path,
+        query,
+      }),
       data,
       maxRedirects: manualRedirect ? 0 : undefined,
       validateStatus: manualRedirect ? (status) => status === 307 : null,
@@ -325,18 +273,15 @@ export abstract class BaseOnshapeApi {
     return this.axios.request({
       url: this.baseUrl + path,
       method,
-      headers: this.buildHeaders(
-        this.auth ?? { publicKey: this.publicKey, privateKey: this.privateKey },
-        {
-          acceptJson,
-          extraHeaders,
-          method,
-          nonce: this.createNonce(),
-          date: new Date(),
-          path,
-          query,
-        },
-      ),
+      headers: this.buildHeaders({
+        acceptJson,
+        extraHeaders,
+        method,
+        nonce: this.createNonce(),
+        date: new Date(),
+        path,
+        query,
+      }),
       data,
       responseType: asBuffer ? 'arraybuffer' : undefined,
       maxRedirects: manualRedirect ? 0 : undefined,

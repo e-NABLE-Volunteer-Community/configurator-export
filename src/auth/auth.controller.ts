@@ -11,7 +11,7 @@ export class AuthController {
   @UseGuards(eNableHubGuard)
   @Post('login')
   async login(@Request() req) {
-    return this.authService.login(req.user);
+    return this.authService.login(req.user, req.onshapeAuth);
   }
 
   @Get('profile')

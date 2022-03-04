@@ -1,13 +1,8 @@
-import {
-  eNableConfiguratorError,
-  errorCode,
-  errorType,
-  ErrorTypes,
-} from '../error';
+import { LocalizedError, errorCode, errorType, ErrorTypes } from '../error';
 import { ErrorCodes } from '../error-codes';
 import { ErrorObject } from 'ajv';
 
-export class InvalidBomError extends eNableConfiguratorError<ErrorCodes.InvalidBom> {
+export class InvalidBomError extends LocalizedError<ErrorCodes.InvalidBom> {
   readonly [errorCode] = ErrorCodes.InvalidBom;
   readonly [errorType] = ErrorTypes.BadRequest;
 
@@ -18,7 +13,7 @@ export class InvalidBomError extends eNableConfiguratorError<ErrorCodes.InvalidB
   }
 }
 
-export abstract class InvalidBomLocationError extends eNableConfiguratorError<ErrorCodes.InvalidBomLocation> {
+export abstract class InvalidBomLocationError extends LocalizedError<ErrorCodes.InvalidBomLocation> {
   readonly [errorCode] = ErrorCodes.InvalidBomLocation;
   readonly [errorType] = ErrorTypes.BadRequest;
 
@@ -27,7 +22,7 @@ export abstract class InvalidBomLocationError extends eNableConfiguratorError<Er
   }
 }
 
-export abstract class DeviceNotFoundError extends eNableConfiguratorError<ErrorCodes.DeviceNotFound> {
+export abstract class DeviceNotFoundError extends LocalizedError<ErrorCodes.DeviceNotFound> {
   readonly [errorCode] = ErrorCodes.DeviceNotFound;
   readonly [errorType] = ErrorTypes.NotFound;
 
@@ -36,7 +31,7 @@ export abstract class DeviceNotFoundError extends eNableConfiguratorError<ErrorC
   }
 }
 
-export abstract class PartsNotFoundError extends eNableConfiguratorError<ErrorCodes.PartNotFound> {
+export abstract class PartsNotFoundError extends LocalizedError<ErrorCodes.PartNotFound> {
   readonly [errorCode] = ErrorCodes.PartNotFound;
   readonly [errorType] = ErrorTypes.NotFound;
 

@@ -39,8 +39,6 @@ import { ConfigService } from '@nestjs/config';
     // Export API
     ExportStatusModule,
     ExportModule,
-
-    // ForgeAuthModule,
   ],
   controllers: [HealthController],
   providers: [...authProviders],

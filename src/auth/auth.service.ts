@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { eNableAuthPayload, User, UsersService } from '../users/users.service';
+import { AccessAndRefreshToken } from '../export/onshape-api/base-onshape-api';
 
 export type eNableGuestOrUserAuthPayload = eNableAuthPayload | { guest: 1 };
 
@@ -18,8 +19,8 @@ export class AuthService {
     return this.usersService.userFromAuthPayload(payload);
   }
 
-  async login(user: User) {
-    const payload = { user, sub: user.id };
+  async login(user: User, onshapeAuth: AccessAndRefreshToken) {
+    const payload = { user, sub: user.id, onshapeAuth };
     return { access_token: this.jwtService.sign(payload) };
   }
 }

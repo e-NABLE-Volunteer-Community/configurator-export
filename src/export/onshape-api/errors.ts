@@ -1,15 +1,20 @@
 import { DeviceNotFoundError, InvalidBomLocationError } from '../errors';
 import { ErrorObject } from 'ajv';
+import { BillOfMaterials } from '../../bom-types-and-schemas';
 
 export class OnshapeDeviceNotFoundError extends DeviceNotFoundError {
-  constructor(
-    private readonly deviceName: string,
-    private readonly documentId: string,
-    private readonly workspaceId: string,
-  ) {
+  private readonly deviceName: string;
+  private readonly documentId: string;
+  private readonly workspaceId: string;
+
+  constructor(readonly bom: BillOfMaterials) {
     super(
-      `Device '${deviceName}' not found; looked for document/workspace with ids: ${documentId}/${workspaceId}'`,
+      `Device '${bom.name}' not found; looked for document/workspace with ids: ${bom.location.documentId}/${bom.location.workspaceId}`,
     );
+
+    this.deviceName = bom.name;
+    this.documentId = bom.location.documentId;
+    this.workspaceId = bom.location.workspaceId;
   }
 }
 
@@ -18,9 +23,7 @@ export class OnshapePartsNotFoundError extends DeviceNotFoundError {
     private readonly partNames: string[],
     private readonly deviceName: string,
   ) {
-    super(
-      `Parts '${partNames.toString()}' for device '${deviceName}' not found`,
-    );
+    super(`Parts ${partNames.toString()} for device '${deviceName}' not found`);
   }
 }
 

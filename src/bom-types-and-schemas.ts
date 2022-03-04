@@ -1,18 +1,23 @@
 import { JSONSchemaType } from 'ajv';
 import {
-  BomLocation,
-  BomLocationType,
-} from './export/exporter-factory-registry.js';
-import { PartName } from './export/onshape/onshape-types.js';
-import { AccessAndRefreshToken } from './export/onshape/base-onshape-api';
+  DocumentId,
+  PartName,
+  WorkspaceId,
+} from './export/onshape-api/onshape-types.js';
+import { AccessAndRefreshToken } from './export/onshape-api/base-onshape-api';
 
 export type ExportId = string;
-export interface BillOfMaterials<L extends BomLocationType = BomLocationType> {
+export interface BillOfMaterials {
   name: string;
-  location: BomLocation<L>;
-  authorization?: AccessAndRefreshToken;
+  location: BomLocation;
+  authorization: AccessAndRefreshToken;
   materials: Record<PartName, BomLine>;
 }
+
+export type BomLocation = {
+  documentId: DocumentId;
+  workspaceId: WorkspaceId;
+};
 
 export type BomLine = DefaultBomLine | ConfiguredBomLine;
 export type DefaultBomLine = { count: number };
@@ -32,8 +37,15 @@ export const BillOfMaterialsSchema: JSONSchemaType<BillOfMaterials> = {
   type: 'object',
   properties: {
     name: { type: 'string' },
-    // Intentionally incomplete. This is verified by concrete subclasses.
-    location: { type: 'object', required: [] },
+    location: {
+      type: 'object',
+      properties: {
+        documentId: { type: 'string' },
+        workspaceId: { type: 'string' },
+      },
+      additionalProperties: false,
+      required: ['documentId', 'workspaceId'],
+    },
     authorization: {
       type: 'object',
       properties: {

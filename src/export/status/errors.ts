@@ -1,13 +1,8 @@
-import {
-  eNableConfiguratorError,
-  errorCode,
-  errorType,
-  ErrorTypes,
-} from '../../error';
+import { LocalizedError, errorCode, errorType, ErrorTypes } from '../../error';
 import { ErrorCodes } from '../../error-codes';
 import { ExportId } from '../../bom-types-and-schemas';
 
-export class ExportNotFoundError extends eNableConfiguratorError<ErrorCodes.ExportNotFound> {
+export class ExportNotFoundError extends LocalizedError<ErrorCodes.ExportNotFound> {
   readonly [errorType]: ErrorTypes.NotFound;
   readonly [errorCode]: ErrorCodes.ExportNotFound;
 
@@ -16,7 +11,7 @@ export class ExportNotFoundError extends eNableConfiguratorError<ErrorCodes.Expo
   }
 }
 
-export class ExportTimedOutError extends eNableConfiguratorError<ErrorCodes.ExportTimedOut> {
+export class ExportTimedOutError extends LocalizedError<ErrorCodes.ExportTimedOut> {
   readonly [errorType]: ErrorTypes.InternalServerError;
   readonly [errorCode]: ErrorCodes.ExportTimedOut;
 

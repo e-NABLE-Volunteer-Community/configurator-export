@@ -1,5 +1,5 @@
 import { ExportId } from '../../bom-types-and-schemas';
-import { PartName } from '../onshape/onshape-types';
+import { PartName } from '../onshape-api/onshape-types';
 
 export type ExportStatusState =
   | 'queued'

@@ -2,6 +2,7 @@ import * as crypto from 'crypto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { append, join, pipe, values } from 'ramda';
+import { AccessAndRefreshToken } from '../export/onshape-api/base-onshape-api';
 
 // PROPERTY ORDER MATTERS!!
 export type eNableAuthPayload = {
